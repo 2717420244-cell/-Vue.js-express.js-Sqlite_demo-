@@ -1,0 +1,82 @@
+### Express.js 请求与响应演示 - REST Client 测试
+
+@baseUrl = http://localhost:3000
+
+### ============================================
+### 1. req.params - 路由参数
+### ============================================
+
+### 获取单个书籍（路由参数 :id）
+GET {{baseUrl}}/books/1
+
+### 获取不存在的书籍（测试404）
+GET {{baseUrl}}/books/999
+
+### 删除书籍
+DELETE {{baseUrl}}/books/5
+
+### 更新书籍（路由参数 + 查询参数 + 请求体）
+PUT {{baseUrl}}/books/1?validate=true
+Content-Type: application/json
+
+{
+  "title": "《红楼梦》",
+  "author": "曹雪芹（改）"
+}
+
+### ============================================
+### 2. req.query - 查询字符串参数
+### ============================================
+
+### 搜索书籍（单查询参数）
+GET {{baseUrl}}/search?keyword=红楼梦
+
+### 搜索书籍（多查询参数）
+GET {{baseUrl}}/search?keyword=西游记&year=1592
+
+### 筛选书籍列表（按作者）
+GET {{baseUrl}}/books?author=吴
+
+### 筛选书籍（按年份范围）
+GET {{baseUrl}}/books?minYear=1500&maxYear=1600
+
+### ============================================
+### 3. req.body - 请求体数据
+### ============================================
+
+### 创建新书籍（POST + JSON请求体）
+POST {{baseUrl}}/books
+Content-Type: application/json
+
+{
+  "title": "《朝花夕拾》",
+  "author": "鲁迅",
+  "year": 1926
+}
+
+### 创建书籍 - 数据不完整（测试400）
+POST {{baseUrl}}/books
+Content-Type: application/json
+
+{
+  "title": "《呐喊》"
+}
+
+### ============================================
+### 4. res.status() - 状态码演示
+### ============================================
+
+### 200 OK
+GET {{baseUrl}}/status-examples
+
+### JSON响应示例
+GET {{baseUrl}}/json-response
+
+### 请求头信息
+GET {{baseUrl}}/headers
+
+### ============================================
+### 5. 获取所有书籍（验证结果）
+### ============================================
+
+GET {{baseUrl}}/books

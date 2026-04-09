@@ -1,0 +1,130 @@
+### Express.js + SQLite 数据持久化演示 - REST Client 测试
+
+@baseUrl = http://localhost:3000
+
+### ============================================
+### 1. API 信息
+### ============================================
+
+### 获取API信息
+GET {{baseUrl}}/api
+
+### ============================================
+### 2. CREATE - 创建数据（POST）
+### ============================================
+
+### 创建学生1
+POST {{baseUrl}}/api/students
+Content-Type: application/json
+
+{
+  "name": "张三",
+  "age": 20,
+  "major": "计算机科学与技术",
+  "grade": "大二"
+}
+
+### 创建学生2
+POST {{baseUrl}}/api/students
+Content-Type: application/json
+
+{
+  "name": "李四",
+  "age": 21,
+  "major": "软件工程",
+  "grade": "大三"
+}
+
+### 创建学生3
+POST {{baseUrl}}/api/students
+Content-Type: application/json
+
+{
+  "name": "王五",
+  "age": 19,
+  "major": "计算机科学与技术",
+  "grade": "大一"
+}
+
+### 创建学生4
+POST {{baseUrl}}/api/students
+Content-Type: application/json
+
+{
+  "name": "赵六",
+  "age": 22,
+  "major": "信息安全",
+  "grade": "大四"
+}
+
+### 创建学生 - 数据不完整（测试400）
+POST {{baseUrl}}/api/students
+Content-Type: application/json
+
+{
+  "name": "测试学生"
+}
+
+### ============================================
+### 3. READ - 读取数据（GET）
+### ============================================
+
+### 获取所有学生
+GET {{baseUrl}}/api/students
+
+### 获取单个学生（路由参数）
+GET {{baseUrl}}/api/students/1
+
+### 按专业筛选（查询参数）
+GET {{baseUrl}}/api/students?major=计算机科学与技术
+
+### 按年龄范围筛选（查询参数）
+GET {{baseUrl}}/api/students?minAge=20&maxAge=22
+
+### 按年级筛选（查询参数）
+GET {{baseUrl}}/api/students?grade=大三
+
+### 组合筛选（查询参数）
+GET {{baseUrl}}/api/students?major=计算机科学与技术&minAge=19
+
+### 获取统计信息
+GET {{baseUrl}}/api/stats
+
+### ============================================
+### 4. UPDATE - 更新数据（PUT）
+### ============================================
+
+### 更新学生1（路由参数 + 请求体）
+PUT {{baseUrl}}/api/students/1
+Content-Type: application/json
+
+{
+  "name": "张三（已修改）",
+  "age": 21,
+  "grade": "大三"
+}
+
+### 更新不存在的学生（测试404）
+PUT {{baseUrl}}/api/students/999
+Content-Type: application/json
+
+{
+  "name": "不存在的学生"
+}
+
+### ============================================
+### 5. DELETE - 删除数据（DELETE）
+### ============================================
+
+### 删除学生
+DELETE {{baseUrl}}/api/students/4
+
+### 删除不存在的学生（测试404）
+DELETE {{baseUrl}}/api/students/999
+
+### ============================================
+### 6. 综合验证
+### ============================================
+
+### 重新获取所有学生（验证CRUD结果）
+GET {{baseUrl}}/api/students

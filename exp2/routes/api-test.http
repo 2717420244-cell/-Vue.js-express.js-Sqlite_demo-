@@ -1,0 +1,108 @@
+### Express.js 路由模块演示 - REST Client 测试
+
+@baseUrl = http://localhost:3000
+
+### ============================================
+### 1. API 信息
+### ============================================
+
+GET {{baseUrl}}/api
+
+### ============================================
+### 2. 用户路由模块 /api/users
+### ============================================
+
+### 获取用户列表（查询参数分页）
+GET {{baseUrl}}/api/users
+
+### 获取用户列表（自定义分页）
+GET {{baseUrl}}/api/users?page=1&limit=2
+
+### 获取单个用户（路由参数）
+GET {{baseUrl}}/api/users/1
+
+### 获取不存在的用户（测试404）
+GET {{baseUrl}}/api/users/999
+
+### 创建用户（POST + 请求体）
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "赵七",
+  "email": "zhaoqi@example.com"
+}
+
+### 创建用户 - 数据不完整（测试400）
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "测试用户"
+}
+
+### 更新用户（PUT + 路由参数 + 请求体）
+PUT {{baseUrl}}/api/users/1
+Content-Type: application/json
+
+{
+  "name": "张三（已修改）",
+  "email": "zhangsan_new@example.com"
+}
+
+### 删除用户（路由参数）
+DELETE {{baseUrl}}/api/users/3
+
+### ============================================
+### 3. 产品路由模块 /api/products
+### ============================================
+
+### 获取产品列表
+GET {{baseUrl}}/api/products
+
+### 按分类筛选（查询参数）
+GET {{baseUrl}}/api/products?category=手机
+
+### 按价格范围筛选（查询参数）
+GET {{baseUrl}}/api/products?minPrice=1000&maxPrice=5000
+
+### 获取单个产品（路由参数）
+GET {{baseUrl}}/api/products/1
+
+### 创建产品（POST + 请求体）
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "iPad Pro",
+  "price": 5999,
+  "category": "平板"
+}
+
+### 更新产品（PUT + 路由参数 + 请求体）
+PUT {{baseUrl}}/api/products/2
+Content-Type: application/json
+
+{
+  "name": "MacBook Pro 2024",
+  "price": 14999
+}
+
+### 删除产品（路由参数）
+DELETE {{baseUrl}}/api/products/3
+
+### ============================================
+### 4. 健康检查
+### ============================================
+
+GET {{baseUrl}}/api/health
+
+### ============================================
+### 5. 综合验证
+### ============================================
+
+### 获取所有用户（验证CRUD结果）
+GET {{baseUrl}}/api/users
+
+### 获取所有产品（验证CRUD结果）
+GET {{baseUrl}}/api/products

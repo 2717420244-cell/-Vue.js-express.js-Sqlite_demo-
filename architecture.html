@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Express.js 项目架构与数据库设计</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; background: #f0f2f5; color: #333; line-height: 1.8; padding: 20px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { text-align: center; margin: 20px 0 30px; font-size: 28px; color: #1a1a2e; }
+  h2 { font-size: 22px; color: #16213e; margin: 30px 0 15px; padding-bottom: 8px; border-bottom: 3px solid #0f3460; }
+  h3 { font-size: 18px; color: #0f3460; margin: 20px 0 10px; }
+  .card { background: #fff; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .card svg { display: block; margin: 15px auto; max-width: 100%; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px; }
+  th, td { border: 1px solid #ddd; padding: 10px 14px; text-align: left; }
+  th { background: #0f3460; color: #fff; font-weight: 600; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  td code { background: #e8e8e8; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 4px; }
+  .tag-pk { background: #ffe066; color: #8b6914; }
+  .tag-fk { background: #ffb3ba; color: #8b1a1a; }
+  .tag-nn { background: #bae1ff; color: #1a4b8b; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Express.js 学生管理系统 - 架构与数据库设计</h1>
+
+  <!-- ==================== 系统架构图 ==================== -->
+  <div class="card">
+    <h2>1. 系统架构图</h2>
+    <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+        </marker>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#059669"/>
+        </marker>
+        <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#d97706"/>
+        </marker>
+        <filter id="shadow">
+          <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.15"/>
+        </filter>
+      </defs>
+
+      <!-- 背景 -->
+      <rect x="0" y="0" width="900" height="520" rx="12" fill="#f8fafc"/>
+
+      <!-- Vue.js 前端 -->
+      <rect x="50" y="60" width="200" height="140" rx="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5" filter="url(#shadow)"/>
+      <text x="150" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e40af">🖥️ Vue.js 前端</text>
+      <text x="150" y="130" text-anchor="middle" font-size="11" fill="#3b82f6">用户界面与交互</text>
+      <text x="150" y="150" text-anchor="middle" font-size="11" fill="#3b82f6">表单处理 / 数据展示</text>
+      <text x="150" y="170" text-anchor="middle" font-size="11" fill="#3b82f6">axios / fetch 请求</text>
+      <text x="150" y="190" text-anchor="middle" font-size="11" fill="#3b82f6">路由导航</text>
+
+      <!-- Express.js 后端 -->
+      <rect x="350" y="60" width="220" height="200" rx="16" fill="#d1fae5" stroke="#059669" stroke-width="2.5" filter="url(#shadow)"/>
+      <text x="460" y="100" text-anchor="middle" font-size="18" font-weight="bold" fill="#065f46">⚙️ Express.js 后端</text>
+      <text x="460" y="125" text-anchor="middle" font-size="11" fill="#10b981">路由中间件 (app.js)</text>
+      <line x1="380" y1="133" x2="540" y2="133" stroke="#a7f3d0" stroke-width="0.5"/>
+      <text x="460" y="150" text-anchor="middle" font-size="11" fill="#10b981">/api/users → 用户 CRUD</text>
+      <text x="460" y="168" text-anchor="middle" font-size="11" fill="#10b981">/api/products → 产品 CRUD</text>
+      <text x="460" y="186" text-anchor="middle" font-size="11" fill="#10b981">/api/students → 学生 CRUD</text>
+      <text x="460" y="204" text-anchor="middle" font-size="11" fill="#10b981">/api/stats → 统计信息</text>
+      <line x1="380" y1="212" x2="540" y2="212" stroke="#a7f3d0" stroke-width="0.5"/>
+      <text x="460" y="230" text-anchor="middle" font-size="11" fill="#10b981">express.json() 解析请求体</text>
+      <text x="460" y="248" text-anchor="middle" font-size="11" fill="#10b981">请求日志 / 错误处理中间件</text>
+
+      <!-- SQLite 数据库 -->
+      <rect x="670" y="60" width="190" height="140" rx="16" fill="#fef3c7" stroke="#d97706" stroke-width="2.5" filter="url(#shadow)"/>
+      <text x="765" y="100" text-anchor="middle" font-size="18" font-weight="bold" fill="#92400e">🗄️ SQLite 数据库</text>
+      <text x="765" y="125" text-anchor="middle" font-size="11" fill="#d97706">demo.db</text>
+      <text x="765" y="145" text-anchor="middle" font-size="11" fill="#d97706">students 表</text>
+      <text x="765" y="165" text-anchor="middle" font-size="11" fill="#d97706">CRUD 持久化存储</text>
+      <text x="765" y="185" text-anchor="middle" font-size="11" fill="#d97706">SQL 参数化查询</text>
+
+      <!-- 箭头：Vue.js → Express.js -->
+      <line x1="250" y1="130" x2="345" y2="130" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+      <rect x="265" y="100" rx="4" width="65" height="18" fill="#2563eb"/>
+      <text x="297" y="113" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">HTTP API 请求</text>
+
+      <!-- 箭头：Express.js → SQLite -->
+      <line x1="570" y1="130" x2="665" y2="130" stroke="#059669" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
+      <rect x="580" y="100" rx="4" width="65" height="18" fill="#059669"/>
+      <text x="612" y="113" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">数据查询</text>
+
+      <!-- 箭头：SQLite → Express.js (返回数据) -->
+      <line x1="665" y1="170" x2="570" y2="170" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrowOrange)"/>
+      <text x="617" y="165" text-anchor="middle" font-size="10" fill="#d97706">返回数据</text>
+
+      <!-- 箭头：Express.js → Vue.js (返回JSON) -->
+      <line x1="345" y1="170" x2="250" y2="170" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+      <text x="297" y="165" text-anchor="middle" font-size="10" fill="#2563eb">JSON 响应</text>
+
+      <!-- 图例 -->
+      <rect x="50" y="330" width="810" height="160" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="455" y="360" text-anchor="middle" font-size="16" font-weight="bold" fill="#334155">📋 数据流说明</text>
+
+      <circle cx="90" cy="395" r="6" fill="#2563eb"/>
+      <text x="105" y="400" font-size="13" fill="#475569">① 用户在 Vue.js 前端操作，触发 HTTP API 请求 (GET/POST/PUT/DELETE)</text>
+
+      <circle cx="90" cy="425" r="6" fill="#059669"/>
+      <text x="105" y="430" font-size="13" fill="#475569">② Express.js 接收请求，路由分发，调用数据库操作函数 (dbGet/dbRun)</text>
+
+      <circle cx="90" cy="455" r="6" fill="#d97706"/>
+      <text x="105" y="460" font-size="13" fill="#475569">③ SQLite 执行参数化 SQL 语句，返回查询结果</text>
+
+      <circle cx="90" cy="485" r="6" fill="#2563eb"/>
+      <text x="105" y="490" font-size="13" fill="#475569">④ Express.js 将结果封装为 JSON，返回给前端进行渲染展示</text>
+    </svg>
+  </div>
+
+  <!-- ==================== 数据库概念模型 (E-R图) ==================== -->
+  <div class="card">
+    <h2>2. 数据库概念模型（E-R 图）</h2>
+    <p style="color:#666;margin-bottom:15px;">本系统包含 3 个核心实体：<b>学生 (Student)</b>、<b>课程 (Course)</b>、<b>教师 (Teacher)</b></p>
+
+    <svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowER" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1"/>
+        </marker>
+      </defs>
+
+      <!-- Student 实体 -->
+      <rect x="40" y="30" width="230" height="190" rx="12" fill="#eef2ff" stroke="#6366f1" stroke-width="2" filter="url(#shadow)"/>
+      <text x="155" y="58" text-anchor="middle" font-size="16" font-weight="bold" fill="#4338ca">学生 (Student)</text>
+      <line x1="60" y1="68" x2="250" y2="68" stroke="#c7d2fe" stroke-width="0.5"/>
+      <text x="65" y="90" font-size="12" fill="#4f46e5">◆ id (PK) - 学号</text>
+      <text x="65" y="110" font-size="12" fill="#4f46e5">◇ name - 姓名</text>
+      <text x="65" y="130" font-size="12" fill="#4f46e5">◇ age - 年龄</text>
+      <text x="65" y="150" font-size="12" fill="#4f46e5">◇ major - 专业</text>
+      <text x="65" y="170" font-size="12" fill="#4f46e5">◇ grade - 年级</text>
+      <text x="65" y="190" font-size="12" fill="#4f46e5">◇ created_at - 创建时间</text>
+
+      <!-- Course 实体 -->
+      <rect x="600" y="30" width="230" height="190" rx="12" fill="#fce7f3" stroke="#db2777" stroke-width="2" filter="url(#shadow)"/>
+      <text x="715" y="58" text-anchor="middle" font-size="16" font-weight="bold" fill="#be185d">课程 (Course)</text>
+      <line x1="620" y1="68" x2="810" y2="68" stroke="#f9a8d4" stroke-width="0.5"/>
+      <text x="625" y="90" font-size="12" fill="#db2777">◆ id (PK) - 课程编号</text>
+      <text x="625" y="110" font-size="12" fill="#db2777">◇ name - 课程名称</text>
+      <text x="625" y="130" font-size="12" fill="#db2777">◇ credit - 学分</text>
+      <text x="625" y="150" font-size="12" fill="#db2777">◇ teacher_id (FK) - 授课教师</text>
+      <text x="625" y="170" font-size="12" fill="#db2777">◇ description - 课程描述</text>
+      <text x="625" y="190" font-size="12" fill="#db2777">◇ created_at - 创建时间</text>
+
+      <!-- Teacher 实体 -->
+      <rect x="310" y="270" width="250" height="130" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2" filter="url(#shadow)"/>
+      <text x="435" y="300" text-anchor="middle" font-size="16" font-weight="bold" fill="#065f46">教师 (Teacher)</text>
+      <line x1="330" y1="310" x2="540" y2="310" stroke="#a7f3d0" stroke-width="0.5"/>
+      <text x="330" y="332" font-size="12" fill="#059669">◆ id (PK) - 教师编号</text>
+      <text x="330" y="352" font-size="12" fill="#059669">◇ name - 姓名</text>
+      <text x="330" y="372" font-size="12" fill="#059669">◇ title - 职称</text>
+      <text x="330" y="392" font-size="12" fill="#059669">◇ department - 所属院系</text>
+
+      <!-- 关系：Student N:M Course (选课) -->
+      <polygon points="420,130 490,100 490,160" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="455" y="120" text-anchor="middle" font-size="10" fill="#92400e" font-weight="bold">选课</text>
+      <text x="455" y="135" text-anchor="middle" font-size="9" fill="#92400e">Enrollment</text>
+      <text x="455" y="148" text-anchor="middle" font-size="9" fill="#92400e">N : M</text>
+
+      <!-- 从 Student 到 Enrollment -->
+      <line x1="270" y1="125" x2="415" y2="125" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrowER)"/>
+      <text x="310" y="118" font-size="10" fill="#d97706" font-weight="bold">1</text>
+
+      <!-- 从 Enrollment 到 Course -->
+      <line x1="495" y1="125" x2="595" y2="125" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrowER)"/>
+      <text x="530" y="118" font-size="10" fill="#d97706" font-weight="bold">N</text>
+
+      <!-- 关系：Teacher 1:N Course -->
+      <line x1="435" y1="270" x2="600" y2="220" stroke="#059669" stroke-width="1.5"/>
+      <rect x="480" y="230" rx="4" width="55" height="16" fill="#059669"/>
+      <text x="507" y="242" text-anchor="middle" font-size="9" fill="#fff" font-weight="bold">授课 1:N</text>
+
+      <!-- 图例 -->
+      <rect x="40" y="345" width="820" height="65" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="70" y="370" font-size="12" fill="#475569">◆ 主键 (PK)  &nbsp; ◇ 普通属性  &nbsp; ▷ 外键 (FK)</text>
+      <text x="70" y="392" font-size="12" fill="#475569">联系类型：学生 ⇄ 课程 = 多对多 (N:M)，通过 Enrollment 选课记录关联；教师 ⇄ 课程 = 一对多 (1:N)</text>
+    </svg>
+  </div>
+
+  <!-- ==================== 数据库逻辑模型 ==================== -->
+  <div class="card">
+    <h2>3. 数据库逻辑模型（数据表设计清单）</h2>
+
+    <h3>3.1 students（学生表）</h3>
+    <table>
+      <tr><th>字段名</th><th>数据类型</th><th>约束</th><th>说明</th></tr>
+      <tr><td><code>id</code></td><td>INTEGER</td><td><span class="tag tag-pk">PK</span><span class="tag tag-nn">NOT NULL</span></td><td>学生唯一编号，自增主键</td></tr>
+      <tr><td><code>name</code></td><td>TEXT</td><td><span class="tag tag-nn">NOT NULL</span></td><td>学生姓名</td></tr>
+      <tr><td><code>age</code></td><td>INTEGER</td><td><span class="tag tag-nn">NOT NULL</span></td><td>学生年龄</td></tr>
+      <tr><td><code>major</code></td><td>TEXT</td><td><span class="tag tag-nn">NOT NULL</span></td><td>专业名称</td></tr>
+      <tr><td><code>grade</code></td><td>TEXT</td><td></td><td>年级（大一/大二/大三/大四）</td></tr>
+      <tr><td><code>created_at</code></td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td><td>记录创建时间</td></tr>
+    </table>
+
+    <h3>3.2 courses（课程表）</h3>
+    <table>
+      <tr><th>字段名</th><th>数据类型</th><th>约束</th><th>说明</th></tr>
+      <tr><td><code>id</code></td><td>INTEGER</td><td><span class="tag tag-pk">PK</span><span class="tag tag-nn">NOT NULL</span></td><td>课程唯一编号，自增主键</td></tr>
+      <tr><td><code>name</code></td><td>VARCHAR(100)</td><td><span class="tag tag-nn">NOT NULL</span></td><td>课程名称</td></tr>
+      <tr><td><code>credit</code></td><td>INTEGER</td><td><span class="tag tag-nn">NOT NULL</span></td><td>学分（1-6）</td></tr>
+      <tr><td><code>teacher_id</code></td><td>INTEGER</td><td><span class="tag tag-fk">FK</span><span class="tag tag-nn">NOT NULL</span></td><td>授课教师编号，外键关联 teachers</td></tr>
+      <tr><td><code>description</code></td><td>TEXT</td><td></td><td>课程描述信息</td></tr>
+      <tr><td><code>created_at</code></td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td><td>记录创建时间</td></tr>
+    </table>
+
+    <h3>3.3 teachers（教师表）</h3>
+    <table>
+      <tr><th>字段名</th><th>数据类型</th><th>约束</th><th>说明</th></tr>
+      <tr><td><code>id</code></td><td>INTEGER</td><td><span class="tag tag-pk">PK</span><span class="tag tag-nn">NOT NULL</span></td><td>教师唯一编号，自增主键</td></tr>
+      <tr><td><code>name</code></td><td>VARCHAR(50)</td><td><span class="tag tag-nn">NOT NULL</span></td><td>教师姓名</td></tr>
+      <tr><td><code>title</code></td><td>VARCHAR(50)</td><td></td><td>职称（教授/副教授/讲师）</td></tr>
+      <tr><td><code>department</code></td><td>VARCHAR(100)</td><td><span class="tag tag-nn">NOT NULL</span></td><td>所属院系</td></tr>
+      <tr><td><code>created_at</code></td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td><td>记录创建时间</td></tr>
+    </table>
+
+    <h3>3.4 enrollments（选课表 - 关联表）</h3>
+    <table>
+      <tr><th>字段名</th><th>数据类型</th><th>约束</th><th>说明</th></tr>
+      <tr><td><code>id</code></td><td>INTEGER</td><td><span class="tag tag-pk">PK</span><span class="tag tag-nn">NOT NULL</span></td><td>选课记录编号，自增主键</td></tr>
+      <tr><td><code>student_id</code></td><td>INTEGER</td><td><span class="tag tag-fk">FK</span><span class="tag tag-nn">NOT NULL</span></td><td>学生编号，外键关联 students</td></tr>
+      <tr><td><code>course_id</code></td><td>INTEGER</td><td><span class="tag tag-fk">FK</span><span class="tag tag-nn">NOT NULL</span></td><td>课程编号，外键关联 courses</td></tr>
+      <tr><td><code>score</code></td><td>DECIMAL(5,2)</td><td></td><td>课程成绩（0-100）</td></tr>
+      <tr><td><code>semester</code></td><td>VARCHAR(20)</td><td></td><td>学期（如 2025-2026-1）</td></tr>
+      <tr><td><code>created_at</code></td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td><td>选课时间</td></tr>
+    </table>
+  </div>
+
+  <!-- ==================== 数据库物理模型 (SQL) ==================== -->
+  <div class="card">
+    <h2>4. 数据库物理模型（可执行 SQL 语句）</h2>
+
+    <h3>4.1 创建数据表 (CREATE TABLE)</h3>
+    <pre><code>-- ============================================
+-- 学生管理系统 - SQLite 数据库建表脚本
+-- ============================================
+
+-- 1. 创建教师表
+CREATE TABLE IF NOT EXISTS teachers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(50) NOT NULL,
+    title VARCHAR(50),
+    department VARCHAR(100) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. 创建学生表
+CREATE TABLE IF NOT EXISTS students (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    age INTEGER NOT NULL,
+    major TEXT NOT NULL,
+    grade TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. 创建课程表 (含外键关联教师)
+CREATE TABLE IF NOT EXISTS courses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(100) NOT NULL,
+    credit INTEGER NOT NULL CHECK(credit >= 1 AND credit <= 6),
+    teacher_id INTEGER NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id)
+);
+
+-- 4. 创建选课关联表 (多对多关系)
+CREATE TABLE IF NOT EXISTS enrollments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    score DECIMAL(5,2),
+    semester VARCHAR(20),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    -- 同一学生不能重复选同一门课
+    UNIQUE(student_id, course_id)
+);</code></pre>
+
+    <h3>4.2 创建索引 (CREATE INDEX)</h3>
+    <pre><code>-- ============================================
+-- 索引创建脚本
+-- ============================================
+
+-- 加速按专业查询学生
+CREATE INDEX IF NOT EXISTS idx_students_major
+    ON students(major);
+
+-- 加速按年级查询学生
+CREATE INDEX IF NOT EXISTS idx_students_grade
+    ON students(grade);
+
+-- 加速按姓名查询学生
+CREATE INDEX IF NOT EXISTS idx_students_name
+    ON students(name);
+
+-- 加速按院系查询教师
+CREATE INDEX IF NOT EXISTS idx_teachers_department
+    ON teachers(department);
+
+-- 加速课程表与教师表的关联查询 (JOIN)
+CREATE INDEX IF NOT EXISTS idx_courses_teacher_id
+    ON courses(teacher_id);
+
+-- 加速按课程名称搜索
+CREATE INDEX IF NOT EXISTS idx_courses_name
+    ON courses(name);
+
+-- 加速选课记录按学生查询 (查看某个学生的所有选课)
+CREATE INDEX IF NOT EXISTS idx_enrollments_student_id
+    ON enrollments(student_id);
+
+-- 加速选课记录按课程查询 (查看某门课的所有学生)
+CREATE INDEX IF NOT EXISTS idx_enrollments_course_id
+    ON enrollments(course_id);
+
+-- 加速按学期查询选课记录
+CREATE INDEX IF NOT EXISTS idx_enrollments_semester
+    ON enrollments(semester);</code></pre>
+
+    <h3>4.3 插入示例数据与查询</h3>
+    <pre><code>-- 插入教师数据
+INSERT INTO teachers (name, title, department) VALUES
+    ('张教授', '教授', '计算机科学与技术学院'),
+    ('李副教授', '副教授', '软件工程学院'),
+    ('王讲师', '讲师', '人工智能学院');
+
+-- 插入课程数据
+INSERT INTO courses (name, credit, teacher_id, description) VALUES
+    ('数据结构与算法', 4, 1, '学习常用的数据结构和算法设计思想'),
+    ('Web前端开发', 3, 2, 'HTML/CSS/JavaScript/Vue.js实战'),
+    ('人工智能导论', 3, 3, '机器学习与深度学习基础');
+
+-- 插入选课记录
+INSERT INTO enrollments (student_id, course_id, score, semester) VALUES
+    (1, 1, 85.5, '2025-2026-1'),
+    (1, 2, 92.0, '2025-2026-1'),
+    (2, 1, 78.0, '2025-2026-1'),
+    (3, 3, 88.5, '2025-2026-1');
+
+-- 查询示例：学生选课详情 (多表 JOIN)
+SELECT
+    s.name AS 学生姓名,
+    c.name AS 课程名称,
+    t.name AS 授课教师,
+    e.score AS 成绩,
+    e.semester AS 学期
+FROM enrollments e
+JOIN students s ON e.student_id = s.id
+JOIN courses c ON e.course_id = c.id
+JOIN teachers t ON c.teacher_id = t.id
+ORDER BY s.id, e.semester;</code></pre>
+  </div>
+</div>
+</body>
+</html>

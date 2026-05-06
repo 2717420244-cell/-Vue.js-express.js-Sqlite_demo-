@@ -1,0 +1,17 @@
+{
+  "name": "account-trading-api",
+  "version": "1.0.0",
+  "description": "游戏账号交易系统后端API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sql.js": "^1.9.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5"
+  }
+}

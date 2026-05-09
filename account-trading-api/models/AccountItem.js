@@ -72,7 +72,7 @@ class AccountItem {
     const db = getDatabase();
     db.run(
       'INSERT INTO account_items (seller_id, title, category, price, description, images) VALUES (?, ?, ?, ?, ?, ?)',
-      [seller_id, title, category, price, description, images ? JSON.stringify(images) : null]
+      [seller_id, title, category, price, description || null, images ? JSON.stringify(images) : null]
     );
     saveDatabase();
 

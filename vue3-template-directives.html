@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 3 模板指令示例 — v-for / v-if / 文本插值</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 60px 20px;
+    }
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 520px;
+    }
+    h1 {
+      font-size: 1.3rem;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 0.82rem;
+      color: #999;
+      margin-bottom: 24px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 22px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    button:active { transform: scale(0.96); }
+    .btn-toggle {
+      background: linear-gradient(135deg, #0f3460, #16213e);
+      color: #fff;
+    }
+    .btn-toggle:hover { box-shadow: 0 4px 16px rgba(15, 52, 96, 0.4); }
+    .btn-add {
+      background: #e8f0fe;
+      color: #0f3460;
+    }
+    .btn-add:hover { background: #d2e3fc; }
+    .btn-reset {
+      background: #fff;
+      color: #999;
+      border: 2px solid #eee;
+    }
+    .btn-reset:hover { border-color: #ccc; color: #666; }
+
+    .list { list-style: none; }
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #f8f9fa;
+      transition: all 0.3s ease;
+    }
+    .list-item:hover { background: #eef1f5; }
+
+    .item-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+    /* ---------- v-if 控制的状态标签 ---------- */
+    .badge {
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .badge-online  { background: #d4edda; color: #155724; }
+    .badge-offline { background: #f8d7da; color: #721c24; }
+    .badge-idle    { background: #fff3cd; color: #856404; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+      color: #bbb;
+      font-size: 0.95rem;
+    }
+    .stats {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: #999;
+    }
+    .stats strong { color: #0f3460; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <h1>设备状态面板</h1>
+      <p class="subtitle">演示 <code>v-for</code> · <code>v-if</code> · 文本插值</p>
+
+      <div class="toolbar">
+        <button class="btn-toggle" @click="toggleRandom">随机切换状态</button>
+        <button class="btn-add"    @click="addDevice">+ 添加设备</button>
+        <button class="btn-reset"  @click="resetAll">重置</button>
+      </div>
+
+      <!-- ==================== v-if + v-for ==================== -->
+      <ul v-if="devices.length > 0" class="list">
+        <li v-for="device in devices" :key="device.id" class="list-item">
+          <!-- 文本插值: 设备名称 -->
+          <span class="item-name">{{ device.name }}</span>
+
+          <!-- v-if / v-else-if / v-else: 按状态渲染不同标签 -->
+          <span v-if="device.status === 'online'"  class="badge badge-online">在线</span>
+          <span v-else-if="device.status === 'idle'" class="badge badge-idle">空闲</span>
+          <span v-else class="badge badge-offline">离线</span>
+        </li>
+      </ul>
+
+      <!-- v-if: 空列表提示 -->
+      <div v-else class="empty-state">暂无设备，点击"添加设备"开始</div>
+
+      <div class="stats">
+        <span>设备总数: <strong>{{ devices.length }}</strong></span>
+        <span>在线: <strong>{{ onlineCount }}</strong></span>
+        <span>离线: <strong>{{ offlineCount }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const { createApp } = Vue
+
+    createApp({
+      data() {
+        return {
+          devices: [
+            { id: 1, name: '客厅摄像头', status: 'online' },
+            { id: 2, name: '卧室传感器', status: 'online' },
+            { id: 3, name: '车库门锁',   status: 'offline' },
+            { id: 4, name: '恒温器',     status: 'idle' },
+            { id: 5, name: '烟雾报警器', status: 'online' },
+          ],
+          nextId: 6,
+        }
+      },
+      computed: {
+        onlineCount()  { return this.devices.filter(d => d.status === 'online').length },
+        offlineCount() { return this.devices.filter(d => d.status === 'offline').length },
+      },
+      methods: {
+        toggleRandom() {
+          if (this.devices.length === 0) return
+          const statuses = ['online', 'offline', 'idle']
+          const i = Math.floor(Math.random() * this.devices.length)
+          const current = this.devices[i].status
+          const others = statuses.filter(s => s !== current)
+          this.devices[i].status = others[Math.floor(Math.random() * others.length)]
+        },
+        addDevice() {
+          const names = ['门窗传感器', '智能插座', '路由器', 'NAS', '空调', '门铃', '人体感应器']
+          const statuses = ['online', 'offline', 'idle']
+          const name = names[Math.floor(Math.random() * names.length)]
+          const status = statuses[Math.floor(Math.random() * statuses.length)]
+          this.devices.push({ id: this.nextId++, name, status })
+        },
+        resetAll() {
+          this.devices = [
+            { id: 1, name: '客厅摄像头', status: 'online' },
+            { id: 2, name: '卧室传感器', status: 'online' },
+            { id: 3, name: '车库门锁',   status: 'offline' },
+            { id: 4, name: '恒温器',     status: 'idle' },
+            { id: 5, name: '烟雾报警器', status: 'online' },
+          ]
+          this.nextId = 6
+        },
+      },
+    }).mount('#app')
+  </script>
+</body>
+</html>

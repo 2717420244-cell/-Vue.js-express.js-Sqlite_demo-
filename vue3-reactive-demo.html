@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 3 响应式数据与方法示例</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      min-width: 360px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      color: #555;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .counter-display {
+      font-size: 5rem;
+      font-weight: 700;
+      color: #333;
+      margin: 16px 0;
+      transition: transform 0.15s ease;
+    }
+    .counter-display.bump {
+      transform: scale(1.15);
+      color: #764ba2;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 12px 28px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    button:active { transform: scale(0.96); }
+    .btn-inc {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+    .btn-inc:hover { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5); }
+    .btn-dec {
+      background: #f0f0f0;
+      color: #555;
+    }
+    .btn-dec:hover { background: #e0e0e0; }
+    .btn-reset {
+      background: #fff;
+      color: #999;
+      border: 2px solid #eee;
+    }
+    .btn-reset:hover { border-color: #ccc; color: #666; }
+    .info {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      font-size: 0.85rem;
+      color: #999;
+    }
+    .info span { color: #764ba2; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="card">
+      <h1>计数器</h1>
+      <div class="counter-display" :class="{ bump: bumping }">{{ count }}</div>
+
+      <div class="btn-group">
+        <button class="btn-inc" @click="increment">+ 增加</button>
+        <button class="btn-dec" @click="decrement">- 减少</button>
+        <button class="btn-reset" @click="reset">重置</button>
+      </div>
+
+      <div class="info">
+        步长: <span>{{ step }}</span> &nbsp;|&nbsp;
+        已操作 <span>{{ operationCount }}</span> 次
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue 3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const { createApp } = Vue
+
+    createApp({
+      // ========== data: 响应式数据 ==========
+      data() {
+        return {
+          count: 0,         // 计数器当前值
+          step: 1,          // 每次增减的步长
+          bumping: false,   // 控制动画状态
+        }
+      },
+
+      // ========== computed: 计算属性 ==========
+      computed: {
+        operationCount() {
+          // 这里仅做演示 — 实际项目中可通过 watch 追踪操作次数
+          return Math.abs(this.count)
+        },
+      },
+
+      // ========== methods: 方法 ==========
+      methods: {
+        increment() {
+          this.count += this.step
+          this.triggerBump()
+        },
+        decrement() {
+          this.count -= this.step
+          this.triggerBump()
+        },
+        reset() {
+          this.count = 0
+          this.triggerBump()
+        },
+        triggerBump() {
+          this.bumping = true
+          setTimeout(() => { this.bumping = false }, 150)
+        },
+      },
+    }).mount('#app')
+  </script>
+</body>
+</html>

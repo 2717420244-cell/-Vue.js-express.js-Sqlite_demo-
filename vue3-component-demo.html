@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 3 组件化示例 — 父子组件 · Props · 自定义事件</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 50%, #1a3a4a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .container {
+      background: #fff;
+      border-radius: 20px;
+      padding: 44px 40px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      width: 100%;
+      max-width: 560px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 28px;
+    }
+    .subtitle code {
+      background: #f0f0f5;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    /* 父级统计卡片 */
+    .total-card {
+      background: linear-gradient(135deg, #0f3460 0%, #1a1a5e 100%);
+      color: #fff;
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .total-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    .total-value {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .total-icon {
+      font-size: 2.6rem;
+      opacity: 0.25;
+    }
+
+    /* 子组件按钮区 */
+    .counters-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+    .counter-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    /* 按钮计数器卡片 */
+    .counter-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: #f5f6fa;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+    .counter-item:hover {
+      background: #eef0f8;
+      border-color: #d0d4e4;
+    }
+    .counter-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .counter-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+    .counter-self {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    .counter-self strong {
+      color: #0f3460;
+    }
+    .counter-btn {
+      padding: 10px 26px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: #fff;
+    }
+    .counter-btn:active { transform: scale(0.95); }
+    .counter-btn.blue   { background: linear-gradient(135deg, #0f3460, #1a1a5e); }
+    .counter-btn.green  { background: linear-gradient(135deg, #1b7a4a, #145c38); }
+    .counter-btn.orange { background: linear-gradient(135deg, #c06014, #9a4a0e); }
+    .counter-btn.purple { background: linear-gradient(135deg, #5b2d8e, #401f6b); }
+
+    /* 重置按钮 */
+    .btn-reset {
+      width: 100%;
+      padding: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #fff;
+      color: #888;
+      transition: all 0.2s ease;
+    }
+    .btn-reset:hover { border-color: #aaa; color: #555; }
+    .btn-reset:active { transform: scale(0.98); }
+
+    /* 分析说明区域 */
+    .analysis {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #eee;
+    }
+    .analysis h2 {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    .analysis h3 {
+      font-size: 0.88rem;
+      color: #555;
+      margin: 14px 0 6px;
+    }
+    .analysis p, .analysis li {
+      font-size: 0.82rem;
+      color: #777;
+      line-height: 1.7;
+    }
+    .analysis ul {
+      padding-left: 20px;
+    }
+    .analysis code {
+      background: #f0f0f5;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.78rem;
+      color: #c06014;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <h1>组件化计数器</h1>
+      <p class="subtitle">演示 Vue 3 <code>props</code> · <code>emits</code> · 父子组件通信</p>
+
+      <!-- 父组件：总点击次数 -->
+      <div class="total-card">
+        <div>
+          <div class="total-label">所有按钮累计点击</div>
+          <div class="total-value">{{ totalClicks }}</div>
+        </div>
+        <div class="total-icon">👆</div>
+      </div>
+
+      <!-- 子组件列表 -->
+      <div class="counters-title">点击按钮增加计数</div>
+      <div class="counter-grid">
+        <button-counter
+          v-for="btn in buttons"
+          :key="btn.id"
+          :name="btn.name"
+          :color="btn.color"
+          @increment="onChildIncrement"
+        ></button-counter>
+      </div>
+
+      <button class="btn-reset" @click="resetAll">重置所有计数</button>
+
+      <!-- 分析说明 -->
+      <div class="analysis">
+        <h2>分析说明</h2>
+        <h3>1. Vue 组件的构成</h3>
+        <p>每个 <code>.vue</code> 单文件组件（SFC）通常包含三部分：</p>
+        <ul>
+          <li><strong>模板（template）</strong> — 定义 HTML 结构，使用 Vue 指令和插值表达式</li>
+          <li><strong>脚本（script）</strong> — 定义组件逻辑：<code>data</code>、<code>props</code>、<code>emits</code>、<code>computed</code>、<code>methods</code> 等</li>
+          <li><strong>样式（style）</strong> — 可使用 <code>scoped</code> 属性将 CSS 限定在当前组件</li>
+        </ul>
+        <p>本示例使用 <code>app.component()</code> 注册全局组件的方式，等效于 SFC 中的组件定义。</p>
+
+        <h3>2. 组件间通信方式</h3>
+        <ul>
+          <li><strong>父 → 子（Props）</strong>：父组件通过 <code>props</code> 向子组件传递数据（如 <code>:name</code>、<code>:color</code>）。子组件通过 <code>props</code> 选项声明接收。</li>
+          <li><strong>子 → 父（Emits）</strong>：子组件通过 <code>$emit('事件名', 参数)</code> 触发自定义事件，父组件用 <code>@事件名="处理函数"</code> 监听。</li>
+          <li><strong>单向数据流</strong>：数据从父组件流向子组件（props 只读），子组件不能直接修改 props，而是通过事件通知父组件修改。</li>
+        </ul>
+
+        <h3>3. 本例工作流程</h3>
+        <p>每个 <code>ButtonCounter</code> 子组件维护自身点击计数（<code>count</code>），点击时同时 <code>$emit('increment')</code> 通知父组件。父组件 <code>App</code> 监听 <code>@increment</code> 事件，累加 <code>totalClicks</code>。</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const { createApp } = Vue
+
+    const app = createApp({
+      data() {
+        return {
+          totalClicks: 0,
+          buttons: [
+            { id: 1, name: '蓝色计数器', color: 'blue' },
+            { id: 2, name: '绿色计数器', color: 'green' },
+            { id: 3, name: '橙色计数器', color: 'orange' },
+            { id: 4, name: '紫色计数器', color: 'purple' },
+          ]
+        }
+      },
+      methods: {
+        onChildIncrement() {
+          this.totalClicks++
+        },
+        resetAll() {
+          this.totalClicks = 0
+          // 通知所有子组件重置 — 通过 key 变化强制重新渲染
+          this.buttons = this.buttons.map(b => ({ ...b }))
+        }
+      }
+    })
+
+    // 定义 ButtonCounter 子组件
+    app.component('ButtonCounter', {
+      props: {
+        name: {
+          type: String,
+          required: true
+        },
+        color: {
+          type: String,
+          default: 'blue'
+        }
+      },
+      emits: ['increment'],
+      data() {
+        return {
+          count: 0
+        }
+      },
+      template: `
+        <div class="counter-item">
+          <div class="counter-info">
+            <span class="counter-name">{{ name }}</span>
+            <span class="counter-self">自身计数: <strong>{{ count }}</strong></span>
+          </div>
+          <button
+            class="counter-btn"
+            :class="color"
+            @click="handleClick"
+          >点击 +1</button>
+        </div>
+      `,
+      methods: {
+        handleClick() {
+          this.count++
+          this.$emit('increment')
+        }
+      }
+    })
+
+    app.mount('#app')
+  </script>
+</body>
+</html>

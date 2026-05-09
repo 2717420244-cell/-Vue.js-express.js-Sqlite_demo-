@@ -6,7 +6,7 @@ class Order {
     const db = getDatabase();
     const stmt = db.prepare(`
       SELECT o.*, ai.title as item_title, ai.price as item_price,
-             u.username as buyer_name, u2.username as seller_name
+             ai.seller_id, u.username as buyer_name, u2.username as seller_name
       FROM orders o
       JOIN account_items ai ON o.item_id = ai.item_id
       JOIN users u ON o.buyer_id = u.uid
@@ -28,7 +28,7 @@ class Order {
     const db = getDatabase();
     let sql = `
       SELECT o.*, ai.title as item_title, ai.price as item_price,
-             u.username as buyer_name, u2.username as seller_name
+             ai.seller_id, u.username as buyer_name, u2.username as seller_name
       FROM orders o
       JOIN account_items ai ON o.item_id = ai.item_id
       JOIN users u ON o.buyer_id = u.uid

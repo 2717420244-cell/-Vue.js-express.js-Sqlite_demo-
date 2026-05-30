@@ -1,16 +1,22 @@
 {
-  "name": "qianduan",
+  "name": "vue-frontend-demo",
   "version": "1.0.0",
-  "description": "{**以下是 Gitee 平台说明，您可以替换此简介**\r Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台\r 无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}",
-  "main": "generate_report.js",
+  "private": true,
+  "type": "module",
+  "description": "Vue 3 前端项目示例 — 包含 Axios 网络配置与 Vue Router 路由系统",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "docx": "^9.6.1"
+    "axios": "^1.7.2",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.27",
+    "vue-router": "^4.3.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.2.12"
   }
 }

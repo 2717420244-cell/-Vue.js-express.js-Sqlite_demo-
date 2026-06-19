@@ -11,26 +11,10 @@
         <span class="nav-icon">{{ item.icon }}</span>
         <span class="nav-label">{{ item.label }}</span>
       </div>
-
-      <!-- 分割线 -->
-      <div class="nav-divider"></div>
-
-      <!-- 账号交易系统分组 -->
-      <div
-        v-for="item in tradeNavItems"
-        :key="item.path"
-        class="nav-item nav-item--trade"
-        :class="{ active: isActive(item) }"
-        @click="navigate(item.path)"
-      >
-        <span class="nav-icon">{{ item.icon }}</span>
-        <span class="nav-label">{{ item.label }}</span>
-      </div>
     </nav>
 
     <div class="sidebar-footer">
-      <div class="status-dot"></div>
-      <span>系统运行中</span>
+      <span class="footer-text">账号交易系统 v1.0</span>
     </div>
   </aside>
 </template>
@@ -42,18 +26,10 @@ const router = useRouter()
 const route = useRoute()
 
 const navItems = [
-  { path: '/',              icon: '🏠', label: '首页' },
-  { path: '/dashboard',     icon: '📊', label: '仪表盘' },
-  { path: '/users',         icon: '👥', label: '用户管理' },
-  { path: '/about',         icon: 'ℹ️', label: '关于项目' },
-]
-
-// 账号交易系统（独立分组）
-const tradeNavItems = [
   { path: '/trade/items',   icon: '🛒', label: '账号商城' },
   { path: '/trade/orders',  icon: '📦', label: '我的订单' },
+  { path: '/trade/publish', icon: '➕', label: '发布账号' },
   { path: '/trade/profile', icon: '👤', label: '个人中心' },
-  { path: '/trade/login',   icon: '🔑', label: '登录' },
 ]
 
 function isActive(item) {
@@ -67,9 +43,9 @@ function navigate(path) {
 
 <style scoped>
 .app-sidebar {
-  width: var(--sidebar-width);
+  width: 200px;
   background: #fff;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid #ebeef5;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -81,69 +57,46 @@ function navigate(path) {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 8px;
+  padding: 0 10px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 10px 14px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s;
   font-size: 14px;
   color: var(--text-regular);
   user-select: none;
 }
 
 .nav-item:hover {
-  background: #ecf5ff;
-  color: var(--color-primary);
+  background: #f0fdf4;
+  color: #16a34a;
 }
 
 .nav-item.active {
-  background: var(--color-primary);
+  background: #16a34a;
   color: #fff;
   font-weight: 600;
 }
 
-.nav-divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 8px 12px;
-}
-
-.nav-item--trade.active {
-  background: #67c23a;
-}
-
 .nav-icon {
-  font-size: 18px;
-  width: 24px;
+  font-size: 17px;
+  width: 22px;
   text-align: center;
 }
 
 .sidebar-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-color);
+  padding: 14px;
+  border-top: 1px solid #f0f2f5;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-success);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+.footer-text {
+  font-size: 11px;
+  color: var(--text-placeholder);
 }
 </style>

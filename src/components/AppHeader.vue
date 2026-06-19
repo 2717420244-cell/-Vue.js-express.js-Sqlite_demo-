@@ -1,56 +1,95 @@
 <template>
   <header class="app-header">
-    <div class="header-left">
-      <span class="logo">📦 Vue Demo</span>
-      <span class="subtitle">Axios + Router 示例项目</span>
+    <router-link to="/trade/items" class="logo-link">
+      <span class="logo">🎮 账号交易平台</span>
+    </router-link>
+
+    <div class="header-right">
+      <!-- 已登录：显示用户名 -->
+      <template v-if="authStore.isLoggedIn">
+        <span class="user-name">{{ authStore.username }}</span>
+        <button class="logout-btn" @click="handleLogout">退出</button>
+      </template>
+      <!-- 未登录：去登录 -->
+      <router-link v-else to="/trade/login" class="login-link">登录</router-link>
     </div>
-    <nav class="header-nav">
-      <span class="nav-hint">模拟已登录用户</span>
-    </nav>
   </header>
 </template>
 
 <script setup>
-// 顶部导航栏 — 纯展示
+import { useAuthStore } from '@/stores/tradeAuth'
+import { useRouter } from 'vue-router'
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+function handleLogout() {
+  authStore.doLogout()
+  router.push('/trade/items')
+}
 </script>
 
 <style scoped>
 .app-header {
-  height: var(--header-height);
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: linear-gradient(135deg, #2c3e50, #34495e);
+  background: #1a1a2e;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.header-left {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
+.logo-link {
+  text-decoration: none;
+  color: #fff;
 }
 
 .logo {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 0.5px;
 }
 
-.subtitle {
-  font-size: 13px;
-  opacity: 0.7;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.nav-hint {
+.user-name {
   font-size: 13px;
-  opacity: 0.6;
-  padding: 4px 12px;
-  border: 1px solid rgba(255,255,255,0.25);
+  opacity: 0.85;
+}
+
+.logout-btn {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 14px;
   border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+.login-link {
+  font-size: 13px;
+  color: #fff;
+  text-decoration: none;
+  padding: 4px 16px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+
+.login-link:hover {
+  background: rgba(255,255,255,0.12);
 }
 </style>

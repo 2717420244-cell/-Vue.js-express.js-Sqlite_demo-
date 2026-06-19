@@ -1,37 +1,25 @@
-/* ============================================================
-   全局样式 — 基于 CSS 变量实现主题化
-   ============================================================ */
+/*
+ * 账号交易系统 — 全局样式
+ */
 
 :root {
-  /* 主色调 */
-  --color-primary: #409eff;
-  --color-primary-light: #66b1ff;
-  --color-primary-dark: #337ecc;
-
-  /* 功能色 */
-  --color-success: #67c23a;
-  --color-warning: #e6a23c;
-  --color-danger: #f56c6c;
-  --color-info: #909399;
-
-  /* 中性色 */
-  --text-primary: #303133;
-  --text-regular: #606266;
-  --text-secondary: #909399;
-  --text-placeholder: #c0c4cc;
-  --border-color: #dcdfe6;
-  --bg-color: #f5f7fa;
-
-  /* 布局 */
-  --header-height: 56px;
-  --sidebar-width: 220px;
-
-  /* 圆角 & 阴影 */
-  --radius-base: 8px;
-  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --color-primary: #16a34a;
+  --color-primary-light: #22c55e;
+  --color-primary-dark: #15803d;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #6b7280;
+  --text-primary: #1f2937;
+  --text-regular: #4b5563;
+  --text-secondary: #9ca3af;
+  --text-placeholder: #d1d5db;
+  --border-color: #e5e7eb;
+  --bg-color: #f3f4f6;
+  --radius-base: 10px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
 }
 
-/* 全局重置 */
 *,
 *::before,
 *::after {
@@ -64,59 +52,60 @@ a:hover {
 /* 页面切换动画 */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
 .fade-slide-enter-from {
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(8px);
 }
-
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateY(-12px);
+  transform: translateY(-8px);
 }
 
-/* 通用卡片样式 */
+/* 卡片 */
 .card {
   background: #fff;
   border-radius: var(--radius-base);
   box-shadow: var(--shadow-card);
   padding: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
 }
 
-/* 通用按钮 */
+/* 按钮 */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 8px 20px;
   font-size: 14px;
-  border: 1px solid transparent;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s;
   color: #fff;
   background: var(--color-primary);
+  font-weight: 500;
 }
-
 .btn:hover {
   background: var(--color-primary-light);
 }
-
 .btn:active {
   background: var(--color-primary-dark);
 }
-
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 .btn--sm {
   padding: 5px 12px;
   font-size: 12px;

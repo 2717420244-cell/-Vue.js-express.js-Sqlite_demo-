@@ -30,14 +30,15 @@ exports.register = async (req, res, next) => {
     });
 
     // 生成Token
-    const token = generateToken({ uid: user.uid, username: user.username });
+    const token = generateToken({ uid: user.uid, username: user.username, role: user.role || 'user' });
 
     success(res, {
       token,
       user: {
         uid: user.uid,
         username: user.username,
-        phone: user.phone
+        phone: user.phone,
+        role: user.role || 'user'
       }
     }, '注册成功');
   } catch (err) {
@@ -68,7 +69,7 @@ exports.login = async (req, res, next) => {
     }
 
     // 生成Token
-    const token = generateToken({ uid: user.uid, username: user.username });
+    const token = generateToken({ uid: user.uid, username: user.username, role: user.role || 'user' });
 
     success(res, {
       token,
@@ -78,7 +79,8 @@ exports.login = async (req, res, next) => {
         phone: user.phone,
         real_name: user.real_name,
         avatar: user.avatar,
-        balance: user.balance
+        balance: user.balance,
+        role: user.role || 'user'
       }
     }, '登录成功');
   } catch (err) {

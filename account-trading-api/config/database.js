@@ -9,13 +9,11 @@ let db = null;
 async function initDatabase() {
   const SQL = await initSqlJs();
 
-  // 确保data目录存在
   const dataDir = path.dirname(DB_PATH);
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
   }
 
-  // 如果数据库文件存在则加载，否则创建新数据库
   if (fs.existsSync(DB_PATH)) {
     const fileBuffer = fs.readFileSync(DB_PATH);
     db = new SQL.Database(fileBuffer);
@@ -23,23 +21,21 @@ async function initDatabase() {
     db = new SQL.Database();
   }
 
-  // 创建表结构
   createTables();
-
-  // 保存数据库
+  migrateDatabase();
   saveDatabase();
 
   return db;
 }
 
 function createTables() {
-  // 用户表
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       uid INTEGER PRIMARY KEY AUTOINCREMENT,
       username VARCHAR(50) NOT NULL UNIQUE,
       phone VARCHAR(11) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
+      role TEXT DEFAULT 'user' NOT NULL,
       real_name VARCHAR(20),
       avatar VARCHAR(255) DEFAULT '',
       balance DECIMAL(10,2) DEFAULT 0.00,
@@ -47,7 +43,6 @@ function createTables() {
     )
   `);
 
-  // 账号商品表
   db.run(`
     CREATE TABLE IF NOT EXISTS account_items (
       item_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +60,6 @@ function createTables() {
     )
   `);
 
-  // 订单表
   db.run(`
     CREATE TABLE IF NOT EXISTS orders (
       order_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,7 +75,6 @@ function createTables() {
     )
   `);
 
-  // 评价表
   db.run(`
     CREATE TABLE IF NOT EXISTS reviews (
       review_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,6 +87,22 @@ function createTables() {
       FOREIGN KEY (reviewer_id) REFERENCES users(uid)
     )
   `);
+}
+
+// 兼容旧数据库：如果 role 列不存在则添加
+function migrateDatabase() {
+  try {
+    const info = db.exec("PRAGMA table_info(users)");
+    if (info.length > 0) {
+      const cols = info[0].values.map(r => r[1]);
+      if (!cols.includes('role')) {
+        db.run("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user' NOT NULL");
+        console.log('数据库迁移: 已添加 role 列到 users 表');
+      }
+    }
+  } catch (e) {
+    console.log('数据库迁移: ', e.message);
+  }
 }
 
 function saveDatabase() {

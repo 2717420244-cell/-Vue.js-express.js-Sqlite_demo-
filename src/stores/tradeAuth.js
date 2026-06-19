@@ -14,6 +14,8 @@ export const useAuthStore = defineStore('tradeAuth', () => {
   const isLoggedIn = computed(() => !!token.value)
   const username = computed(() => user.value?.username || '')
   const uid = computed(() => user.value?.uid || null)
+  const role = computed(() => user.value?.role || 'user')
+  const isAdmin = computed(() => role.value === 'admin')
 
   // ---- 操作 ----
   function saveAuth(t, u) {
@@ -54,7 +56,7 @@ export const useAuthStore = defineStore('tradeAuth', () => {
   }
 
   return {
-    token, user, isLoggedIn, username, uid,
+    token, user, isLoggedIn, username, uid, role, isAdmin,
     doRegister, doLogin, doLogout, fetchProfile, clearAuth
   }
 })

@@ -62,6 +62,14 @@ const routes = [
     meta: { title: '个人中心' }
   },
 
+  // ====== 管理员 ======
+  {
+    path: '/trade/admin/audits',
+    name: 'AdminAudits',
+    component: () => import('@/views/trade/AuditList.vue'),
+    meta: { title: '商品审核', requiresAdmin: true }
+  },
+
   // 404
   {
     path: '/:pathMatch(.*)*',
@@ -79,9 +87,17 @@ const router = createRouter({
   }
 })
 
-// 全局前置守卫：设置页面标题
+// 全局前置守卫：设置页面标题 + 管理员权限校验
 router.beforeEach((to) => {
   document.title = to.meta.title ? `${to.meta.title} — 账号交易` : '账号交易平台'
+
+  // 管理员路由权限检查
+  if (to.meta.requiresAdmin) {
+    const user = JSON.parse(localStorage.getItem('trade_user') || 'null')
+    if (!user || user.role !== 'admin') {
+      return '/trade/login'
+    }
+  }
 })
 
 export default router

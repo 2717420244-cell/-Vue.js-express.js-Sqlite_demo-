@@ -11,25 +11,47 @@
         <span class="nav-icon">{{ item.icon }}</span>
         <span class="nav-label">{{ item.label }}</span>
       </div>
+
+      <!-- 管理员分区 -->
+      <template v-if="authStore.isAdmin">
+        <div class="nav-divider"></div>
+        <div class="nav-section-label">⚙️ 管理</div>
+        <div
+          v-for="item in adminItems"
+          :key="item.path"
+          class="nav-item nav-item--admin"
+          :class="{ active: isActive(item) }"
+          @click="navigate(item.path)"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </div>
+      </template>
     </nav>
 
     <div class="sidebar-footer">
-      <span class="footer-text">账号交易系统 v1.0</span>
+      <span class="footer-text">{{ authStore.isAdmin ? '管理员' : authStore.username || '未登录' }}</span>
     </div>
   </aside>
 </template>
 
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/tradeAuth'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
 const navItems = [
   { path: '/trade/items',   icon: '🛒', label: '账号商城' },
   { path: '/trade/orders',  icon: '📦', label: '我的订单' },
   { path: '/trade/publish', icon: '➕', label: '发布账号' },
   { path: '/trade/profile', icon: '👤', label: '个人中心' },
+]
+
+const adminItems = [
+  { path: '/trade/admin/audits', icon: '📋', label: '商品审核' },
 ]
 
 function isActive(item) {
@@ -88,6 +110,24 @@ function navigate(path) {
   font-size: 17px;
   width: 22px;
   text-align: center;
+}
+
+.nav-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 12px;
+}
+
+.nav-section-label {
+  font-size: 11px;
+  color: var(--text-placeholder);
+  padding: 4px 14px 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.nav-item--admin.active {
+  background: #dc2626;
 }
 
 .sidebar-footer {

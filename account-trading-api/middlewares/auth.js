@@ -36,4 +36,12 @@ function optionalAuth(req, res, next) {
   next();
 }
 
-module.exports = { authMiddleware, optionalAuth };
+// 管理员中间件（需先通过 authMiddleware）
+function adminMiddleware(req, res, next) {
+  if (!req.user || req.user.role !== 'admin') {
+    return error(res, '需要管理员权限', 403);
+  }
+  next();
+}
+
+module.exports = { authMiddleware, optionalAuth, adminMiddleware };

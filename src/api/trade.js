@@ -64,3 +64,17 @@ export function getReviews(itemId, params) {
 export function createReview(data) {
   return http.post('/reviews', data)
 }
+
+// ==================== 管理员 ====================
+export function getAdminAudits(params) {
+  return http.get('/admin/audits', { params })
+}
+export function auditItem(id, action) {
+  return http.put(`/admin/audits/${id}`, { action })
+}
+export function getAdminItems(params) {
+  return http.get('/admin/items', { params })
+}
+export function getAdminUsers(params) {
+  return http.get('/admin/users', { params })
+}

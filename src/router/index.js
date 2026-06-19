@@ -77,6 +77,50 @@ const routes = [
     ]
   },
 
+  // ---- 账号交易系统 ----
+  {
+    path: '/trade/login',
+    name: 'TradeLogin',
+    component: () => import('@/views/trade/Login.vue'),
+    meta: { title: '登录 — 账号交易' }
+  },
+  {
+    path: '/trade/items',
+    name: 'TradeItemList',
+    component: () => import('@/views/trade/ItemList.vue'),
+    meta: { title: '账号商城' }
+  },
+  {
+    path: '/trade/items/:id',
+    name: 'TradeItemDetail',
+    component: () => import('@/views/trade/ItemDetail.vue'),
+    meta: { title: '商品详情' }
+  },
+  {
+    path: '/trade/publish',
+    name: 'TradePublish',
+    component: () => import('@/views/trade/PublishItem.vue'),
+    meta: { title: '发布账号' }
+  },
+  {
+    path: '/trade/orders',
+    name: 'TradeOrderList',
+    component: () => import('@/views/trade/OrderList.vue'),
+    meta: { title: '我的订单' }
+  },
+  {
+    path: '/trade/orders/:id',
+    name: 'TradeOrderDetail',
+    component: () => import('@/views/trade/OrderDetail.vue'),
+    meta: { title: '订单详情' }
+  },
+  {
+    path: '/trade/profile',
+    name: 'TradeProfile',
+    component: () => import('@/views/trade/Profile.vue'),
+    meta: { title: '个人中心' }
+  },
+
   // ---- 关于项目 ----
   {
     path: '/about',

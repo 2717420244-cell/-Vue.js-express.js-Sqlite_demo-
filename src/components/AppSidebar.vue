@@ -11,6 +11,21 @@
         <span class="nav-icon">{{ item.icon }}</span>
         <span class="nav-label">{{ item.label }}</span>
       </div>
+
+      <!-- 分割线 -->
+      <div class="nav-divider"></div>
+
+      <!-- 账号交易系统分组 -->
+      <div
+        v-for="item in tradeNavItems"
+        :key="item.path"
+        class="nav-item nav-item--trade"
+        :class="{ active: isActive(item) }"
+        @click="navigate(item.path)"
+      >
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </div>
     </nav>
 
     <div class="sidebar-footer">
@@ -27,10 +42,18 @@ const router = useRouter()
 const route = useRoute()
 
 const navItems = [
-  { path: '/',          icon: '🏠', label: '首页' },
-  { path: '/dashboard', icon: '📊', label: '仪表盘' },
-  { path: '/users',     icon: '👥', label: '用户管理' },
-  { path: '/about',     icon: 'ℹ️', label: '关于项目' },
+  { path: '/',              icon: '🏠', label: '首页' },
+  { path: '/dashboard',     icon: '📊', label: '仪表盘' },
+  { path: '/users',         icon: '👥', label: '用户管理' },
+  { path: '/about',         icon: 'ℹ️', label: '关于项目' },
+]
+
+// 账号交易系统（独立分组）
+const tradeNavItems = [
+  { path: '/trade/items',   icon: '🛒', label: '账号商城' },
+  { path: '/trade/orders',  icon: '📦', label: '我的订单' },
+  { path: '/trade/profile', icon: '👤', label: '个人中心' },
+  { path: '/trade/login',   icon: '🔑', label: '登录' },
 ]
 
 function isActive(item) {
@@ -83,6 +106,16 @@ function navigate(path) {
   background: var(--color-primary);
   color: #fff;
   font-weight: 600;
+}
+
+.nav-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 12px;
+}
+
+.nav-item--trade.active {
+  background: #67c23a;
 }
 
 .nav-icon {

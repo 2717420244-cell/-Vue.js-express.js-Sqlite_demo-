@@ -80,7 +80,7 @@ async function start() {
     await initDatabase();
     console.log('数据库初始化成功');
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log('========================================');
       console.log('  游戏账号交易系统API服务器已启动');
       console.log(`  服务器地址: http://localhost:${PORT}`);
@@ -103,8 +103,26 @@ async function start() {
       console.log('  POST   /api/reviews             - 提交评价');
       console.log('');
     });
+
+    // 优雅关闭：Ctrl+C 时自动清理
+    process.on('SIGINT', () => {
+      console.log('\n正在关闭服务器...');
+      server.close(() => {
+        console.log('服务器已停止');
+        process.exit(0);
+      });
+    });
   } catch (err) {
-    console.error('启动失败:', err);
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ 端口 ${PORT} 已被占用！`);
+      console.error(`   请先关闭占用该端口的程序，或执行以下命令：`);
+      console.error(`   netstat -ano | findstr :${PORT}`);
+      console.error(`   taskkill /PID <进程ID> /F`);
+      console.error(`\n   或者换个端口启动：`);
+      console.error(`   set PORT=3002 && node app.js`);
+    } else {
+      console.error('启动失败:', err);
+    }
     process.exit(1);
   }
 }

@@ -7,6 +7,7 @@
     <div class="header-right">
       <!-- 已登录：显示用户名 -->
       <template v-if="authStore.isLoggedIn">
+        <span v-if="authStore.isSuperAdmin" class="super-badge">⭐ 超级管理员</span>
         <span class="user-name">{{ authStore.username }}</span>
         <button class="logout-btn" @click="handleLogout">退出</button>
       </template>
@@ -57,6 +58,15 @@ function handleLogout() {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.super-badge {
+  font-size: 11px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 600;
 }
 
 .user-name {

@@ -22,11 +22,15 @@ exports.register = async (req, res, next) => {
     // 密码加密
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 创建用户
+    // 创建用户（第一个用户自动成为管理员）
+    const { users } = User.findAll(1, 1);
+    const role = users.length === 0 ? 'admin' : 'user';
+
     const user = User.create({
       username,
       phone,
-      password: hashedPassword
+      password: hashedPassword,
+      role
     });
 
     // 生成Token

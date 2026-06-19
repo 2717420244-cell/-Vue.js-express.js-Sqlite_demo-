@@ -1,16 +1,13 @@
 const { verifyToken } = require('../utils/token');
+const User = require('../models/User');
 const { error } = require('../utils/response');
 
-// JWT认证中间件
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return error(res, '未提供认证令牌', 401);
   }
-
   const token = authHeader.split(' ')[1];
-
   try {
     const decoded = verifyToken(token);
     req.user = decoded;
@@ -20,28 +17,32 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// 可选认证中间件（不强制要求登录）
 function optionalAuth(req, res, next) {
   const authHeader = req.headers.authorization;
-
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = verifyToken(token);
       req.user = decoded;
-    } catch (err) {
-      // Token无效但不阻止请求
-    }
+    } catch (err) { /* ignore */ }
   }
   next();
 }
 
-// 管理员中间件（需先通过 authMiddleware）
+// 管理员及以上（admin 或 super_admin）
 function adminMiddleware(req, res, next) {
-  if (!req.user || req.user.role !== 'admin') {
+  if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'super_admin')) {
     return error(res, '需要管理员权限', 403);
   }
   next();
 }
 
-module.exports = { authMiddleware, optionalAuth, adminMiddleware };
+// 仅超级管理员
+function superAdminOnly(req, res, next) {
+  if (!req.user || req.user.role !== 'super_admin') {
+    return error(res, '仅超级管理员可执行此操作', 403);
+  }
+  next();
+}
+
+module.exports = { authMiddleware, optionalAuth, adminMiddleware, superAdminOnly };

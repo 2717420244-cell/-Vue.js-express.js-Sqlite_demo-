@@ -21,11 +21,11 @@ class User {
     return row;
   }
 
-  static create({ username, phone, password }) {
+  static create({ username, phone, password, role = 'user' }) {
     const db = getDatabase();
     db.run(
-      'INSERT INTO users (username, phone, password) VALUES (?, ?, ?)',
-      [username, phone, password]
+      'INSERT INTO users (username, phone, password, role) VALUES (?, ?, ?, ?)',
+      [username, phone, password, role]
     );
     saveDatabase();
     return this.findByPhone(phone);
@@ -82,6 +82,12 @@ class User {
     while (stmt.step()) { users.push(stmt.getAsObject()); }
     stmt.free();
     return { users, total };
+  }
+  // 删除用户
+  static delete(uid) {
+    const db = getDatabase();
+    db.run('DELETE FROM users WHERE uid = ?', [uid]);
+    saveDatabase();
   }
 }
 

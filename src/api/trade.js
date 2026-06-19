@@ -78,3 +78,9 @@ export function getAdminItems(params) {
 export function getAdminUsers(params) {
   return http.get('/admin/users', { params })
 }
+export function setUserRole(id, role) {
+  return http.put(`/admin/users/${id}`, { role })
+}
+export function deleteAdminUser(id) {
+  return http.delete(`/admin/users/${id}`)
+}

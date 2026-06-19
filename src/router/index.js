@@ -69,6 +69,12 @@ const routes = [
     component: () => import('@/views/trade/AuditList.vue'),
     meta: { title: '商品审核', requiresAdmin: true }
   },
+  {
+    path: '/trade/admin/users',
+    name: 'AdminUsers',
+    component: () => import('@/views/trade/AdminUsers.vue'),
+    meta: { title: '用户管理', requiresAdmin: true }
+  },
 
   // 404
   {
@@ -94,7 +100,7 @@ router.beforeEach((to) => {
   // 管理员路由权限检查
   if (to.meta.requiresAdmin) {
     const user = JSON.parse(localStorage.getItem('trade_user') || 'null')
-    if (!user || user.role !== 'admin') {
+    if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
       return '/trade/login'
     }
   }

@@ -30,7 +30,9 @@
     </nav>
 
     <div class="sidebar-footer">
-      <span class="footer-text">{{ authStore.isAdmin ? '管理员' : authStore.username || '未登录' }}</span>
+      <span v-if="authStore.isSuperAdmin" class="footer-text">⭐ 超级管理员</span>
+      <span v-else-if="authStore.isAdmin" class="footer-text">👑 管理员</span>
+      <span v-else class="footer-text">{{ authStore.username || '未登录' }}</span>
     </div>
   </aside>
 </template>
@@ -52,6 +54,7 @@ const navItems = [
 
 const adminItems = [
   { path: '/trade/admin/audits', icon: '📋', label: '商品审核' },
+  { path: '/trade/admin/users',  icon: '👥', label: '用户管理' },
 ]
 
 function isActive(item) {

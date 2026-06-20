@@ -8,9 +8,9 @@ class Order {
       SELECT o.*, ai.title as item_title, ai.price as item_price,
              ai.seller_id, u.username as buyer_name, u2.username as seller_name
       FROM orders o
-      JOIN account_items ai ON o.item_id = ai.item_id
-      JOIN users u ON o.buyer_id = u.uid
-      JOIN users u2 ON ai.seller_id = u2.uid
+      LEFT JOIN account_items ai ON o.item_id = ai.item_id
+      LEFT JOIN users u ON o.buyer_id = u.uid
+      LEFT JOIN users u2 ON ai.seller_id = u2.uid
       WHERE o.order_id = ?
     `);
     stmt.bind([orderId]);
@@ -30,9 +30,9 @@ class Order {
       SELECT o.*, ai.title as item_title, ai.price as item_price,
              ai.seller_id, u.username as buyer_name, u2.username as seller_name
       FROM orders o
-      JOIN account_items ai ON o.item_id = ai.item_id
-      JOIN users u ON o.buyer_id = u.uid
-      JOIN users u2 ON ai.seller_id = u2.uid
+      LEFT JOIN account_items ai ON o.item_id = ai.item_id
+      LEFT JOIN users u ON o.buyer_id = u.uid
+      LEFT JOIN users u2 ON ai.seller_id = u2.uid
       WHERE (o.buyer_id = ? OR ai.seller_id = ?)
     `;
     const params = [userId, userId];

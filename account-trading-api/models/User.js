@@ -11,6 +11,16 @@ class User {
     return row;
   }
 
+  static findByUsername(username) {
+    const db = getDatabase();
+    const stmt = db.prepare('SELECT * FROM users WHERE username = ?');
+    stmt.bind([username]);
+    let row = null;
+    if (stmt.step()) { row = stmt.getAsObject(); }
+    stmt.free();
+    return row;
+  }
+
   static findById(uid) {
     const db = getDatabase();
     const stmt = db.prepare('SELECT * FROM users WHERE uid = ?');

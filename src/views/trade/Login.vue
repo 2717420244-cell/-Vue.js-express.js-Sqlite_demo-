@@ -10,8 +10,8 @@
       <!-- 登录表单 -->
       <form v-if="tab === 'login'" class="login-form" @submit.prevent="handleLogin">
         <div class="form-item">
-          <label>手机号</label>
-          <input v-model="loginForm.phone" type="text" maxlength="11" placeholder="请输入手机号" class="form-input" />
+          <label>手机号 / 用户名</label>
+          <input v-model="loginForm.account" type="text" placeholder="请输入手机号或用户名" class="form-input" />
           <span v-if="loginErr" class="field-error">{{ loginErr }}</span>
         </div>
         <div class="form-item">
@@ -65,7 +65,7 @@ const regErr = ref('')
 const loginLoading = ref(false)
 const regLoading = ref(false)
 
-const loginForm = reactive({ phone: '', password: '' })
+const loginForm = reactive({ account: '', password: '' })
 const regForm = reactive({ username: '', phone: '', password: '' })
 
 function switchTab(t) {
@@ -76,13 +76,13 @@ function switchTab(t) {
 
 async function handleLogin() {
   loginErr.value = ''
-  if (!loginForm.phone || !loginForm.password) {
-    loginErr.value = '请填写手机号和密码'
+  if (!loginForm.account || !loginForm.password) {
+    loginErr.value = '请填写账号和密码'
     return
   }
   loginLoading.value = true
   try {
-    await authStore.doLogin({ phone: loginForm.phone, password: loginForm.password })
+    await authStore.doLogin({ account: loginForm.account, password: loginForm.password })
     router.push('/trade/items')
   } catch (e) {
     loginErr.value = e.message

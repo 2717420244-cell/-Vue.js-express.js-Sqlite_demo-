@@ -84,3 +84,14 @@ export function setUserRole(id, role) {
 export function deleteAdminUser(id) {
   return http.delete(`/admin/users/${id}`)
 }
+
+// ==================== 钱包 ====================
+export function getBalance() {
+  return http.get('/wallet/balance')
+}
+export function recharge(amount) {
+  return http.post('/wallet/recharge', { amount })
+}
+export function getWalletTransactions(params) {
+  return http.get('/wallet/transactions', { params })
+}

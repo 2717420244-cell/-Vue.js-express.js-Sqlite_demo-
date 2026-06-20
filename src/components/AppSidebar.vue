@@ -46,10 +46,11 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const navItems = [
-  { path: '/trade/items',   icon: '🛒', label: '账号商城' },
-  { path: '/trade/orders',  icon: '📦', label: '我的订单' },
-  { path: '/trade/publish', icon: '➕', label: '发布账号' },
-  { path: '/trade/profile', icon: '👤', label: '个人中心' },
+  { path: '/trade/items',    icon: '🛒', label: '账号商城' },
+  { path: '/trade/my-items', icon: '📋', label: '我的发布' },
+  { path: '/trade/orders',   icon: '📦', label: '我的订单' },
+  { path: '/trade/publish',  icon: '➕', label: '发布账号' },
+  { path: '/trade/profile',  icon: '👤', label: '个人中心' },
 ]
 
 const adminItems = [

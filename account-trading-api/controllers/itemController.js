@@ -4,13 +4,14 @@ const { success, error, paginated } = require('../utils/response');
 // 获取商品列表
 exports.getList = (req, res, next) => {
   try {
-    const { page = 1, limit = 10, category, keyword, status } = req.query;
+    const { page = 1, limit = 10, category, keyword, status, seller_id } = req.query;
     const result = AccountItem.findAll({
       page: parseInt(page),
       limit: parseInt(limit),
       category,
       keyword,
-      status: status !== undefined ? parseInt(status) : undefined
+      status: status !== undefined ? parseInt(status) : undefined,
+      seller_id: seller_id ? parseInt(seller_id) : undefined
     });
 
     paginated(res, result.items, page, limit, result.total);

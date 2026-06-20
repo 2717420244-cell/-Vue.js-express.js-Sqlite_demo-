@@ -38,6 +38,12 @@ const routes = [
     meta: { title: '发布账号' }
   },
   {
+    path: '/trade/my-items',
+    name: 'MyItems',
+    component: () => import('@/views/trade/MyItems.vue'),
+    meta: { title: '我的发布' }
+  },
+  {
     path: '/trade/orders',
     name: 'TradeOrderList',
     component: () => import('@/views/trade/OrderList.vue'),

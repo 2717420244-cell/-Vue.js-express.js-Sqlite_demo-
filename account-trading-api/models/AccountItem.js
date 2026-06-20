@@ -21,7 +21,7 @@ class AccountItem {
   }
 
   // 获取商品列表
-  static findAll({ page = 1, limit = 10, category, keyword, status }) {
+  static findAll({ page = 1, limit = 10, category, keyword, status, seller_id }) {
     const db = getDatabase();
     let sql = 'SELECT ai.*, u.username as seller_name FROM account_items ai JOIN users u ON ai.seller_id = u.uid WHERE 1=1';
     const params = [];
@@ -37,6 +37,10 @@ class AccountItem {
     if (status !== undefined) {
       sql += ' AND ai.status = ?';
       params.push(status);
+    }
+    if (seller_id) {
+      sql += ' AND ai.seller_id = ?';
+      params.push(seller_id);
     }
 
     sql += ' ORDER BY ai.created_at DESC';

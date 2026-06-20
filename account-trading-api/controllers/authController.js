@@ -24,7 +24,7 @@ exports.register = async (req, res, next) => {
 
     // 创建用户（第一个用户自动成为管理员）
     const { users } = User.findAll(1, 1);
-    const role = users.length === 0 ? 'admin' : 'user';
+    const role = users.length === 0 ? 'super_admin' : 'user';
 
     const user = User.create({
       username,
@@ -53,17 +53,20 @@ exports.register = async (req, res, next) => {
 // 用户登录
 exports.login = async (req, res, next) => {
   try {
-    const { phone, password } = req.body;
+    const { account, password } = req.body;
 
-    // 参数验证
-    if (!phone || !password) {
-      return error(res, '手机号和密码不能为空');
+    // account 可以是手机号或用户名
+    if (!account || !password) {
+      return error(res, '请输入账号和密码');
     }
 
-    // 查找用户
-    const user = User.findByPhone(phone);
+    // 先按手机号查，再按用户名查
+    let user = User.findByPhone(account);
     if (!user) {
-      return error(res, '手机号或密码错误', 401);
+      user = User.findByUsername(account);
+    }
+    if (!user) {
+      return error(res, '账号或密码错误', 401);
     }
 
     // 验证密码

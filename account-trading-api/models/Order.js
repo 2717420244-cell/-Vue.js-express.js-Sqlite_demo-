@@ -121,7 +121,7 @@ class Order {
   static cancelExpired() {
     const db = getDatabase();
     return new Promise((resolve) => {
-      const cutoff = new Date(Date.now() - 5 * 60 * 1000); // 5分钟前（本地时间）
+      const cutoff = new Date(Date.now() - 2 * 60 * 1000); // 2分钟前
       // 用本地时间，和数据库存储格式一致
       const pad = n => String(n).padStart(2, '0');
       const ts = `${cutoff.getFullYear()}-${pad(cutoff.getMonth() + 1)}-${pad(cutoff.getDate())} ${pad(cutoff.getHours())}:${pad(cutoff.getMinutes())}:${pad(cutoff.getSeconds())}`;

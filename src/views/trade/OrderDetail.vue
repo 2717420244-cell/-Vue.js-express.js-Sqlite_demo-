@@ -8,14 +8,7 @@
       <!-- 订单信息 -->
       <div class="card detail-card">
         <div class="order-status-bar" :class="statusClass">
-          <div class="status-row">
-            <span class="status-text">{{ statusLabel }}</span>
-            <span
-              class="countdown"
-              :class="{ 'countdown--urgent': countdownUrgent }"
-              v-if="isUnpaid && countdown >= 0"
-            >⏱ 剩余 {{ countdownText }}</span>
-          </div>
+          <span class="status-text">{{ statusLabel }}</span>
         </div>
 
         <div class="detail-grid">
@@ -67,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/tradeAuth'
 import { getOrderById, payOrder, deliverOrder, confirmOrder, createReview } from '@/api/trade'
@@ -117,64 +110,11 @@ const deliveryLabel = computed(() => {
   return '⏳ 未交付'
 })
 
-// 支付倒计时
-const countdown = ref(-1)
-let timer = null
-
-const isUnpaid = computed(() => {
-  const o = order.value
-  if (!o || !o.create_time) return false
-  return Number(o.pay_status) === 0 && Number(o.delivery_status) >= 0
-})
-
-function getSecondsSinceCreated() {
-  // 手动解析 create_time 避免时区问题
-  const raw = String(order.value.create_time)
-  const [datePart, timePart] = raw.split(' ')
-  const [Y, M, D] = datePart.split('-').map(Number)
-  const [h, m, s] = (timePart || '0:0:0').split(':').map(Number)
-  const created = new Date(Y, M - 1, D, h, m, s).getTime()
-  return Math.floor((Date.now() - created) / 1000)
-}
-
-function startCountdown() {
-  stopCountdown()
-  if (!isUnpaid.value) return
-  const total = 300
-  const elapsed = getSecondsSinceCreated()
-  let remaining = Math.max(0, total - elapsed)
-  countdown.value = remaining
-  if (remaining > 0) {
-    timer = setInterval(() => {
-      remaining--
-      countdown.value = remaining
-      if (remaining <= 0) stopCountdown()
-    }, 1000)
-  }
-}
-
-function stopCountdown() {
-  if (timer) { clearInterval(timer); timer = null }
-}
-
-const countdownText = computed(() => {
-  if (countdown.value <= 0) return '0:00'
-  const m = Math.floor(countdown.value / 60)
-  const s = countdown.value % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-})
-
-const countdownUrgent = computed(() => countdown.value > 0 && countdown.value <= 60)
-
-onUnmounted(() => { stopCountdown() })
-
 async function load() {
   loading.value = true
   try {
     const res = await getOrderById(route.params.id)
     order.value = res.data
-    await nextTick()
-    startCountdown()
   } catch (e) { console.error(e) }
   finally { loading.value = false }
 }
@@ -219,10 +159,6 @@ onMounted(() => load())
 .back-link:hover { text-decoration: underline; }
 .detail-card { padding: 0; overflow: hidden; }
 .order-status-bar { padding: 18px 24px; font-size: 16px; font-weight: 600; }
-.status-row { display: flex; justify-content: space-between; align-items: center; }
-.countdown { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: #d97706; }
-.countdown--urgent { color: #dc2626; animation: blink 1s ease-in-out infinite; }
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 .s--pending { background: #fdf6ec; color: #e6a23c; }
 .s--paid { background: #ecf5ff; color: #409eff; }
 .s--deliver { background: #f0f9eb; color: #67c23a; }

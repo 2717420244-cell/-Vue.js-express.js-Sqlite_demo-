@@ -5,11 +5,7 @@ const { success, error, paginated } = require('../utils/response');
 // 获取余额
 exports.getBalance = (req, res) => {
   const user = User.findById(req.user.uid);
-  success(res, {
-    balance: user.balance || 0,
-    frozen: user.frozen || 0,
-    available: Math.max(0, (user.balance || 0) - (user.frozen || 0))
-  });
+  success(res, { balance: user.balance || 0 });
 };
 
 // 充值（模拟）
@@ -33,7 +29,7 @@ exports.recharge = (req, res) => {
     );
     saveDatabase();
 
-    success(res, { balance: updated.balance, frozen: updated.frozen }, `充值成功，当前余额 ¥${updated.balance}`);
+    success(res, { balance: updated.balance }, `充值成功，当前余额 ¥${updated.balance}`);
   } catch (err) { next(err); }
 };
 

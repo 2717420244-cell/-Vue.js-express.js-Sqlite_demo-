@@ -72,11 +72,11 @@ class AccountItem {
   }
 
   // 创建商品
-  static create({ seller_id, title, category, price, description, images }) {
+  static create({ seller_id, title, category, price, description, images, status = 0 }) {
     const db = getDatabase();
     db.run(
-      'INSERT INTO account_items (seller_id, title, category, price, description, images) VALUES (?, ?, ?, ?, ?, ?)',
-      [seller_id, title, category, price, description || null, images ? JSON.stringify(images) : null]
+      'INSERT INTO account_items (seller_id, title, category, price, description, images, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [seller_id, title, category, price, description || null, images ? JSON.stringify(images) : null, status]
     );
     saveDatabase();
 

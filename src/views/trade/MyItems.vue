@@ -24,6 +24,7 @@
           <span class="status-badge" :class="'s--' + item.status">{{ statusMap[item.status] }}</span>
           <!-- 操作 -->
           <button v-if="item.status !== 2" class="btn btn--sm" @click.stop="$router.push(`/trade/publish?id=${item.item_id}`)">编辑</button>
+          <button v-if="item.status === 1" class="btn btn--sm btn--down" @click.stop="handleDown(item)">下架</button>
         </div>
       </div>
     </div>
@@ -36,7 +37,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/tradeAuth'
-import { getItems } from '@/api/trade'
+import { getItems, updateItemStatus } from '@/api/trade'
 
 const authStore = useAuthStore()
 const items = ref([])
@@ -67,6 +68,15 @@ async function fetchItems() {
     total.value = res.data?.pagination?.total || 0
   } catch (e) { console.error(e) }
   finally { loading.value = false }
+}
+
+async function handleDown(item) {
+  if (!confirm(`确定下架「${item.title}」吗？`)) return
+  try {
+    await updateItemStatus(item.item_id, 3)
+    alert('已下架')
+    fetchItems()
+  } catch (e) { alert(e.message) }
 }
 
 onMounted(() => fetchItems())
@@ -100,6 +110,8 @@ watch(statusFilter, () => { page.value = 1; fetchItems() })
 .s--1 { background: #dcfce7; color: #16a34a; }
 .s--2 { background: #fee2e2; color: #dc2626; }
 .s--3 { background: #f3f4f6; color: #9ca3af; }
+.btn--down { background: #f59e0b; }
+.btn--down:hover { background: #fbbf24; }
 
 .state-wrap { text-align: center; padding: 60px; color: var(--text-secondary); }
 .state--empty { font-size: 16px; }

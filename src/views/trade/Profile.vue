@@ -16,17 +16,9 @@
         </div>
 
         <div class="wallet-row">
-          <div class="wallet-item">
-            <span class="wl-label">总余额</span>
+          <div class="wallet-item wallet-item--single">
+            <span class="wl-label">余额</span>
             <span class="wl-value">¥{{ wallet.balance }}</span>
-          </div>
-          <div class="wallet-item">
-            <span class="wl-label">冻结中</span>
-            <span class="wl-value wl--frozen">¥{{ wallet.frozen }}</span>
-          </div>
-          <div class="wallet-item">
-            <span class="wl-label">可用余额</span>
-            <span class="wl-value wl--available">¥{{ wallet.available }}</span>
           </div>
         </div>
 
@@ -113,7 +105,7 @@ const roleLabel = computed(() => {
 })
 
 // 钱包
-const wallet = reactive({ balance: 0, frozen: 0, available: 0 })
+const wallet = reactive({ balance: 0 })
 const showRecharge = ref(false)
 const rechargeAmount = ref(100)
 const recharging = ref(false)
@@ -130,7 +122,7 @@ async function doRecharge() {
   recharging.value = true
   try {
     const res = await recharge(rechargeAmount.value)
-    Object.assign(wallet, { balance: res.data.balance, frozen: res.data.frozen, available: res.data.balance - res.data.frozen })
+    wallet.balance = res.data.balance
     alert(res.message)
     showRecharge.value = false
     loadTransactions()
@@ -151,7 +143,7 @@ async function loadTransactions() {
   finally { txLoading.value = false }
 }
 
-const txTypeMap = { recharge: '💳 充值', freeze: '🔒 冻结', pay: '💸 支付', income: '💰 收入', refund: '↩️ 退款' }
+const txTypeMap = { recharge: '💳 充值', pay: '💸 支付', income: '💰 收入', refund: '↩️ 退款' }
 function txLabel(tx) { return txTypeMap[tx.type] || tx.type }
 function formatTime(t) { return t ? String(t).substring(0, 19) : '' }
 
@@ -192,12 +184,11 @@ onMounted(() => { initEditForm(); loadBalance(); loadTransactions() })
 .wallet-card { padding: 20px 24px; }
 .wallet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .wallet-header h3 { font-size: 16px; }
-.wallet-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.wallet-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .wallet-item { text-align: center; padding: 12px; background: #f9fafb; border-radius: 8px; }
 .wl-label { font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px; }
 .wl-value { font-size: 22px; font-weight: 700; color: #16a34a; }
-.wl--frozen { color: #f59e0b; }
-.wl--available { color: #1d4ed8; }
+.wallet-item--single { grid-column: 1 / -1; max-width: 300px; justify-self: center; }
 .recharge-bar { display: flex; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f2f5; }
 .recharge-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; }
 

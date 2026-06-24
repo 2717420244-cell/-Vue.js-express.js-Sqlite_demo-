@@ -84,6 +84,9 @@ export function setUserRole(id, role) {
 export function deleteAdminUser(id) {
   return http.delete(`/admin/users/${id}`)
 }
+export function resetAllData() {
+  return http.post('/admin/reset')
+}
 
 // ==================== 钱包 ====================
 export function getBalance() {

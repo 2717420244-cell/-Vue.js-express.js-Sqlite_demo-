@@ -50,16 +50,22 @@ exports.create = (req, res, next) => {
       return error(res, '标题、分类和价格不能为空');
     }
 
+    // 超级管理员发布无需审核，直接上架
+    const sellerRole = req.user.role || 'user';
+    const initialStatus = sellerRole === 'super_admin' ? 1 : 0;
+
     const item = AccountItem.create({
       seller_id,
       title,
       category,
       price: parseFloat(price),
       description,
-      images
+      images,
+      status: initialStatus
     });
 
-    success(res, item, '商品发布成功');
+    const msg = initialStatus === 1 ? '发布成功（管理员免审核，已自动上架）' : '商品发布成功，等待审核';
+    success(res, item, msg);
   } catch (err) {
     next(err);
   }

@@ -37,7 +37,7 @@ onMounted(async () => {
   loading.value = true
   try {
     const res = await getOrders()
-    orders.value = res.data?.orders || []
+    orders.value = res.data?.items || []
   } catch (e) { console.error(e) }
   finally { loading.value = false }
 })

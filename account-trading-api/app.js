@@ -106,6 +106,18 @@ async function start() {
       console.log('');
     });
 
+    // 定时清理过期未支付订单（每30秒检查一次）
+    const Order = require('./models/Order');
+    setInterval(async () => {
+      try {
+        const cancelled = await Order.cancelExpired();
+        if (cancelled.length > 0) {
+          cancelled.forEach(o => console.log(`[定时任务] 订单 #${o.order_id} 超时未支付，已自动取消`));
+        }
+      } catch (e) { console.error('[定时任务] 错误:', e.message); }
+    }, 30000);
+    console.log('');
+
     // 优雅关闭：Ctrl+C 时自动清理
     process.on('SIGINT', () => {
       console.log('\n正在关闭服务器...');

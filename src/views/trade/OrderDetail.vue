@@ -8,7 +8,14 @@
       <!-- 订单信息 -->
       <div class="card detail-card">
         <div class="order-status-bar" :class="statusClass">
-          <span class="status-text">{{ statusLabel }}</span>
+          <div class="status-row">
+            <span class="status-text">{{ statusLabel }}</span>
+            <span
+              class="countdown"
+              :class="{ 'countdown--urgent': countdownUrgent }"
+              v-if="isUnpaid && countdown >= 0"
+            >⏱ 剩余 {{ countdownText }}</span>
+          </div>
         </div>
 
         <div class="detail-grid">
@@ -18,19 +25,18 @@
           <div class="dg-item"><span class="dg-label">买家 ID</span><span>{{ order.buyer_id }}</span></div>
           <div class="dg-item"><span class="dg-label">卖家 ID</span><span>{{ order.seller_id }}</span></div>
           <div class="dg-item"><span class="dg-label">创建时间</span><span>{{ order.create_time }}</span></div>
-          <div class="dg-item"><span class="dg-label">支付状态</span><span>{{ order.pay_status === 1 ? '✅ 已支付' : '⏳ 待支付' }}</span></div>
           <div class="dg-item"><span class="dg-label">交付状态</span><span>{{ deliveryLabel }}</span></div>
         </div>
 
         <!-- 操作按钮 -->
         <div class="action-bar" v-if="authStore.isLoggedIn">
-          <button v-if="order.pay_status === 0 && order.buyer_id === authStore.uid"
+          <button v-if="Number(order.pay_status) === 0 && Number(order.delivery_status) >= 0 && order.buyer_id == authStore.uid"
             class="btn" @click="handlePay">💳 支付</button>
-          <button v-if="order.pay_status === 1 && order.delivery_status === 0 && order.seller_id === authStore.uid"
+          <button v-if="Number(order.pay_status) === 1 && Number(order.delivery_status) === 0 && order.seller_id == authStore.uid"
             class="btn btn--deliver" @click="handleDeliver">📦 确认交付</button>
-          <button v-if="order.delivery_status === 1 && order.buyer_id === authStore.uid"
+          <button v-if="Number(order.delivery_status) === 1 && order.buyer_id == authStore.uid"
             class="btn" @click="handleConfirm">✅ 确认收货</button>
-          <button v-if="order.delivery_status === 2 && order.buyer_id === authStore.uid && !hasReviewed"
+          <button v-if="Number(order.delivery_status) === 2 && order.buyer_id == authStore.uid && !hasReviewed"
             class="btn btn--review" @click="showReview = true">⭐ 评价</button>
         </div>
       </div>
@@ -61,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/tradeAuth'
 import { getOrderById, payOrder, deliverOrder, confirmOrder, createReview } from '@/api/trade'
@@ -82,32 +88,93 @@ const reviewSubmitting = ref(false)
 
 const statusLabel = computed(() => {
   const o = order.value; if (!o) return ''
-  if (o.delivery_status === 2) return '已完成'
-  if (o.delivery_status === 1) return '已交付，待收货'
-  if (o.pay_status === 1) return '已支付，待交付'
+  const ds = Number(o.delivery_status)
+  const ps = Number(o.pay_status)
+  if (ds === -1 && ps === 0) return '已过期，订单取消'
+  if (ds === 2) return '已完成'
+  if (ds === 1) return '已交付，待收货'
+  if (ps === 1) return '已支付，待交付'
   return '待支付'
 })
 
 const statusClass = computed(() => {
   const o = order.value; if (!o) return ''
-  if (o.delivery_status === 2) return 's--done'
-  if (o.delivery_status === 1) return 's--deliver'
-  if (o.pay_status === 1) return 's--paid'
+  const ds = Number(o.delivery_status)
+  const ps = Number(o.pay_status)
+  if (ds === -1 && ps === 0) return 's--expired'
+  if (ds === 2) return 's--done'
+  if (ds === 1) return 's--deliver'
+  if (ps === 1) return 's--paid'
   return 's--pending'
 })
 
 const deliveryLabel = computed(() => {
   const o = order.value; if (!o) return ''
-  if (o.delivery_status === 2) return '✅ 已完成'
-  if (o.delivery_status === 1) return '✅ 已交付'
+  const ds = Number(o.delivery_status)
+  if (ds === -1) return '❌ 已过期'
+  if (ds === 2) return '✅ 已完成'
+  if (ds === 1) return '✅ 已交付'
   return '⏳ 未交付'
 })
+
+// 支付倒计时
+const countdown = ref(-1)
+let timer = null
+
+const isUnpaid = computed(() => {
+  const o = order.value
+  if (!o || !o.create_time) return false
+  return Number(o.pay_status) === 0 && Number(o.delivery_status) >= 0
+})
+
+function getSecondsSinceCreated() {
+  // 手动解析 create_time 避免时区问题
+  const raw = String(order.value.create_time)
+  const [datePart, timePart] = raw.split(' ')
+  const [Y, M, D] = datePart.split('-').map(Number)
+  const [h, m, s] = (timePart || '0:0:0').split(':').map(Number)
+  const created = new Date(Y, M - 1, D, h, m, s).getTime()
+  return Math.floor((Date.now() - created) / 1000)
+}
+
+function startCountdown() {
+  stopCountdown()
+  if (!isUnpaid.value) return
+  const total = 300
+  const elapsed = getSecondsSinceCreated()
+  let remaining = Math.max(0, total - elapsed)
+  countdown.value = remaining
+  if (remaining > 0) {
+    timer = setInterval(() => {
+      remaining--
+      countdown.value = remaining
+      if (remaining <= 0) stopCountdown()
+    }, 1000)
+  }
+}
+
+function stopCountdown() {
+  if (timer) { clearInterval(timer); timer = null }
+}
+
+const countdownText = computed(() => {
+  if (countdown.value <= 0) return '0:00'
+  const m = Math.floor(countdown.value / 60)
+  const s = countdown.value % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+})
+
+const countdownUrgent = computed(() => countdown.value > 0 && countdown.value <= 60)
+
+onUnmounted(() => { stopCountdown() })
 
 async function load() {
   loading.value = true
   try {
     const res = await getOrderById(route.params.id)
     order.value = res.data
+    await nextTick()
+    startCountdown()
   } catch (e) { console.error(e) }
   finally { loading.value = false }
 }
@@ -152,10 +219,15 @@ onMounted(() => load())
 .back-link:hover { text-decoration: underline; }
 .detail-card { padding: 0; overflow: hidden; }
 .order-status-bar { padding: 18px 24px; font-size: 16px; font-weight: 600; }
+.status-row { display: flex; justify-content: space-between; align-items: center; }
+.countdown { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: #d97706; }
+.countdown--urgent { color: #dc2626; animation: blink 1s ease-in-out infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 .s--pending { background: #fdf6ec; color: #e6a23c; }
 .s--paid { background: #ecf5ff; color: #409eff; }
 .s--deliver { background: #f0f9eb; color: #67c23a; }
 .s--done { background: #f4f4f5; color: #909399; }
+.s--expired { background: #fee2e2; color: #dc2626; }
 .detail-grid { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .dg-item { display: flex; flex-direction: column; gap: 4px; }
 .dg-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }

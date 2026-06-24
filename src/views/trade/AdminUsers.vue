@@ -85,13 +85,22 @@
       <span>{{ page }} / {{ Math.ceil(total / limit) }}</span>
       <button :disabled="page >= Math.ceil(total / limit)" @click="changePage(page + 1)">下一页</button>
     </div>
+
+    <!-- 超级管理员：一键清除 -->
+    <div v-if="authStore.isSuperAdmin" class="card danger-zone">
+      <div class="danger-header">
+        <h3>⚠️ 危险操作</h3>
+      </div>
+      <p class="danger-desc">一键清除所有商品、订单、评价和交易记录（用户数据保留）。此操作不可撤销！</p>
+      <button class="btn btn--danger" @click="handleReset">🗑️ 一键清除所有记录</button>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/tradeAuth'
-import { getAdminUsers, setUserRole, deleteAdminUser } from '@/api/trade'
+import { getAdminUsers, setUserRole, deleteAdminUser, resetAllData } from '@/api/trade'
 
 const authStore = useAuthStore()
 const users = ref([])
@@ -136,6 +145,16 @@ async function handleDelete(user) {
   try {
     await deleteAdminUser(user.uid)
     alert('已删除')
+    fetchUsers()
+  } catch (e) { alert(e.message) }
+}
+
+async function handleReset() {
+  if (!confirm('⚠️ 确定要清除所有商品、订单、评价和交易记录吗？\n\n此操作不可撤销！用户账号不受影响。')) return
+  if (!confirm('再次确认：真的要清除吗？')) return
+  try {
+    await resetAllData()
+    alert('已清除所有记录')
     fetchUsers()
   } catch (e) { alert(e.message) }
 }
@@ -190,4 +209,8 @@ onMounted(() => fetchUsers())
 .state-wrap { text-align: center; padding: 60px; color: var(--text-secondary); }
 .spinner { width: 20px; height: 20px; border: 2px solid var(--border-color); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.danger-zone { margin-top: 24px; border: 2px solid #fca5a5; }
+.danger-header h3 { font-size: 16px; color: #dc2626; }
+.danger-desc { font-size: 13px; color: var(--text-secondary); margin: 8px 0 16px; }
 </style>

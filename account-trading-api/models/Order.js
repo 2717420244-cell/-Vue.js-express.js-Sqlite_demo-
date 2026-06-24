@@ -117,6 +117,37 @@ class Order {
     return this.findById(orderId);
   }
 
+  // 取消过期未支付订单
+  static cancelExpired() {
+    const db = getDatabase();
+    return new Promise((resolve) => {
+      const cutoff = new Date(Date.now() - 5 * 60 * 1000); // 5分钟前（本地时间）
+      // 用本地时间，和数据库存储格式一致
+      const pad = n => String(n).padStart(2, '0');
+      const ts = `${cutoff.getFullYear()}-${pad(cutoff.getMonth() + 1)}-${pad(cutoff.getDate())} ${pad(cutoff.getHours())}:${pad(cutoff.getMinutes())}:${pad(cutoff.getSeconds())}`;
+
+      // 只查未支付且未被取消的订单
+      const stmt = db.prepare(
+        "SELECT * FROM orders WHERE pay_status = 0 AND delivery_status = 0 AND create_time < ?"
+      );
+      stmt.bind([ts]);
+      const expired = [];
+      while (stmt.step()) expired.push(stmt.getAsObject());
+      stmt.free();
+
+      expired.forEach(o => {
+        db.run("UPDATE orders SET delivery_status = -1, finish_time = CURRENT_TIMESTAMP WHERE order_id = ?", [o.order_id]);
+        db.run("UPDATE account_items SET status = 1 WHERE item_id = ?", [o.item_id]);
+      });
+
+      if (expired.length > 0) {
+        console.log(`[定时任务] ${new Date().toLocaleTimeString()} — 清理了 ${expired.length} 条过期订单`);
+        saveDatabase();
+      }
+      resolve(expired);
+    });
+  }
+
   // 获取订单统计
   static getStats() {
     const db = getDatabase();

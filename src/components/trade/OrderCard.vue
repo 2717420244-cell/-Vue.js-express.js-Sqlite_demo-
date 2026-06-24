@@ -25,18 +25,23 @@ const props = defineProps({ order: { type: Object, required: true } })
 
 const statusLabel = computed(() => {
   const o = props.order
-  if (o.delivery_status === 2) return '已完成'
-  if (o.delivery_status === 1) return '已交付'
-  if (o.pay_status === 1) return '已支付'
-  if (o.pay_status === 0 && o.order_id) return '待支付'
-  return '未知'
+  const ds = Number(o.delivery_status)
+  const ps = Number(o.pay_status)
+  if (ds === -1 && ps === 0) return '已过期'
+  if (ds === 2) return '已完成'
+  if (ds === 1) return '已交付'
+  if (ps === 1) return '已支付'
+  return '待支付'
 })
 
 const statusClass = computed(() => {
   const o = props.order
-  if (o.delivery_status === 2) return 's--done'
-  if (o.delivery_status === 1) return 's--deliver'
-  if (o.pay_status === 1) return 's--paid'
+  const ds = Number(o.delivery_status)
+  const ps = Number(o.pay_status)
+  if (ds === -1 && ps === 0) return 's--expired'
+  if (ds === 2) return 's--done'
+  if (ds === 1) return 's--deliver'
+  if (ps === 1) return 's--paid'
   return 's--pending'
 })
 </script>
@@ -51,6 +56,7 @@ const statusClass = computed(() => {
 .s--paid { background: #ecf5ff; color: #409eff; }
 .s--deliver { background: #f0f9eb; color: #67c23a; }
 .s--done { background: #f4f4f5; color: #909399; }
+.s--expired { background: #fee2e2; color: #dc2626; }
 .order-body { display: flex; justify-content: space-between; gap: 16px; }
 .order-info { flex: 1; }
 .order-amount { font-size: 18px; font-weight: 700; color: #f56c6c; margin-top: 4px; }

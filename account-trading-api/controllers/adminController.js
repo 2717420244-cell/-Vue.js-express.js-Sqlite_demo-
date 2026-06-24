@@ -1,5 +1,6 @@
 const AccountItem = require('../models/AccountItem');
 const User = require('../models/User');
+const { getDatabase, saveDatabase } = require('../config/database');
 const { success, error, paginated } = require('../utils/response');
 
 // 获取待审核商品列表
@@ -85,6 +86,20 @@ exports.setUserRole = (req, res, next) => {
     const updated = User.setRole(parseInt(id), role);
     const label = role === 'admin' ? '管理员' : '普通用户';
     success(res, updated, `已将「${updated.username}」设为${label}`);
+  } catch (err) { next(err); }
+};
+
+// 一键清除所有记录（仅超级管理员）
+exports.resetAll = (req, res, next) => {
+  try {
+    const db = getDatabase();
+    db.run('DELETE FROM transactions');
+    db.run('DELETE FROM reviews');
+    db.run('DELETE FROM orders');
+    db.run('DELETE FROM account_items');
+    db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name != 'users'");
+    saveDatabase();
+    success(res, null, '已清除所有商品、订单、评价和交易记录');
   } catch (err) { next(err); }
 };
 

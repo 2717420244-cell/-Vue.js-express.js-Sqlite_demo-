@@ -14,19 +14,24 @@
         <div class="detail-grid">
           <div class="dg-item"><span class="dg-label">订单编号</span><span>#{{ order.order_id }}</span></div>
           <div class="dg-item"><span class="dg-label">金额</span><span class="price">¥{{ order.amount }}</span></div>
-          <div class="dg-item"><span class="dg-label">商品 ID</span><span>{{ order.item_id }}</span></div>
-          <div class="dg-item"><span class="dg-label">买家 ID</span><span>{{ order.buyer_id }}</span></div>
-          <div class="dg-item"><span class="dg-label">卖家 ID</span><span>{{ order.seller_id }}</span></div>
+          <div class="dg-item"><span class="dg-label">商品</span><span>{{ order.item_title }}</span></div>
+          <div class="dg-item"><span class="dg-label">买家</span><span>{{ order.buyer_name }}</span></div>
+          <div class="dg-item"><span class="dg-label">卖家</span><span>{{ order.seller_name }}</span></div>
           <div class="dg-item"><span class="dg-label">创建时间</span><span>{{ order.create_time }}</span></div>
-          <div class="dg-item"><span class="dg-label">交付状态</span><span>{{ deliveryLabel }}</span></div>
+          <div class="dg-item"><span class="dg-label">状态</span><span>{{ statusLabel }}</span></div>
+        </div>
+
+        <!-- 已交付/已完成：显示账号密码给买家 -->
+        <div v-if="order.account_info && (order.buyer_id == authStore.uid || order.seller_id == authStore.uid)"
+          class="account-info-box">
+          <div class="ai-label">🔑 交付的账号信息</div>
+          <pre class="ai-content">{{ order.account_info }}</pre>
         </div>
 
         <!-- 操作按钮 -->
         <div class="action-bar" v-if="authStore.isLoggedIn">
           <button v-if="Number(order.pay_status) === 0 && Number(order.delivery_status) >= 0 && order.buyer_id == authStore.uid"
             class="btn" @click="handlePay">💳 支付</button>
-          <button v-if="Number(order.pay_status) === 1 && Number(order.delivery_status) === 0 && order.seller_id == authStore.uid"
-            class="btn btn--deliver" @click="handleDeliver">📦 确认交付</button>
           <button v-if="Number(order.delivery_status) === 1 && order.buyer_id == authStore.uid"
             class="btn" @click="handleConfirm">✅ 确认收货</button>
           <button v-if="Number(order.delivery_status) === 2 && order.buyer_id == authStore.uid && !hasReviewed"
@@ -63,7 +68,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/tradeAuth'
-import { getOrderById, payOrder, deliverOrder, confirmOrder, createReview } from '@/api/trade'
+import { getOrderById, payOrder, confirmOrder, createReview } from '@/api/trade'
 import RatingStars from '@/components/trade/RatingStars.vue'
 
 const route = useRoute()
@@ -78,7 +83,6 @@ const rating = ref(5)
 const comment = ref('')
 const reviewErr = ref('')
 const reviewSubmitting = ref(false)
-
 const statusLabel = computed(() => {
   const o = order.value; if (!o) return ''
   const ds = Number(o.delivery_status)
@@ -101,15 +105,6 @@ const statusClass = computed(() => {
   return 's--pending'
 })
 
-const deliveryLabel = computed(() => {
-  const o = order.value; if (!o) return ''
-  const ds = Number(o.delivery_status)
-  if (ds === -1) return '❌ 已过期'
-  if (ds === 2) return '✅ 已完成'
-  if (ds === 1) return '✅ 已交付'
-  return '⏳ 未交付'
-})
-
 async function load() {
   loading.value = true
   try {
@@ -122,13 +117,6 @@ async function load() {
 async function handlePay() {
   if (!confirm('确认支付？')) return
   try { await payOrder(order.value.order_id); alert('支付成功！'); load() }
-  catch (e) { alert(e.message) }
-}
-
-async function handleDeliver() {
-  const info = prompt('请输入交付给买家的账号信息（账号名、密码等）：')
-  if (!info) return
-  try { await deliverOrder(order.value.order_id, info); alert('交付确认成功！'); load() }
   catch (e) { alert(e.message) }
 }
 
@@ -169,6 +157,12 @@ onMounted(() => load())
 .dg-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
 .price { font-size: 20px; font-weight: 700; color: #f56c6c; }
 .action-bar { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid #f2f3f5; background: #fafbfc; }
+.account-info-box { padding: 16px 24px 20px; background: #f0fdf4; border-top: 1px solid #dcfce7; border-bottom: 1px solid #dcfce7; }
+.ai-label { font-size: 13px; font-weight: 600; color: #16a34a; margin-bottom: 8px; }
+.ai-content { margin: 0; padding: 12px; background: #fff; border: 1px solid #dcfce7; border-radius: 8px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; font-family: inherit; }
+.deliver-box { padding: 16px 24px; background: #ecf5ff; border-top: 1px solid #dbeafe; display: flex; gap: 10px; }
+.deliver-box .form-input { flex: 1; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; resize: vertical; font-family: inherit; }
+.deliver-box .form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
 .btn--deliver { background: #67c23a; }
 .btn--deliver:hover { background: #85ce61; }
 .btn--review { background: #f7ba2a; }

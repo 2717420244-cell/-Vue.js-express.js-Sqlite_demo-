@@ -23,7 +23,13 @@ class AccountItem {
   // 获取商品列表
   static findAll({ page = 1, limit = 10, category, keyword, status, seller_id }) {
     const db = getDatabase();
-    let sql = 'SELECT ai.*, u.username as seller_name FROM account_items ai JOIN users u ON ai.seller_id = u.uid WHERE 1=1';
+    // seller 视图时 LEFT JOIN 订单，获取交付状态
+    const extraCols = seller_id ? ', o.order_id, o.pay_status, o.delivery_status as order_delivery_status, o.buyer_id, ub.username as buyer_name' : '';
+    const extraJoin = seller_id
+      ? ' LEFT JOIN orders o ON ai.item_id = o.item_id AND o.pay_status = 1 AND o.delivery_status >= 0'
+      + ' LEFT JOIN users ub ON o.buyer_id = ub.uid'
+      : '';
+    let sql = `SELECT ai.*, u.username as seller_name${extraCols} FROM account_items ai JOIN users u ON ai.seller_id = u.uid${extraJoin} WHERE 1=1`;
     const params = [];
 
     if (category) {

@@ -84,7 +84,8 @@ exports.deliver = (req, res, next) => {
     if (order.pay_status !== 1) return error(res, '订单未支付');
     if (order.delivery_status !== 0) return error(res, '订单已交付');
 
-    const updated = Order.updateDeliveryStatus(parseInt(req.params.id), 1);
+    const accountInfo = req.body.account_info || '';
+    const updated = Order.updateDeliveryStatus(parseInt(req.params.id), 1, accountInfo);
     success(res, updated, '交付确认成功');
   } catch (err) { next(err); }
 };

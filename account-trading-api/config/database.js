@@ -57,6 +57,7 @@ function createTables() {
     amount DECIMAL(10,2) NOT NULL,
     pay_status INTEGER DEFAULT 0,
     delivery_status INTEGER DEFAULT 0,
+    account_info TEXT,
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     finish_time DATETIME,
     FOREIGN KEY (buyer_id) REFERENCES users(uid),
@@ -90,18 +91,28 @@ function createTables() {
 function migrateDatabase() {
   // 兼容旧库：添加 role 列
   try {
-    const info = db.exec("PRAGMA table_info(users)");
-    if (info.length > 0) {
-      const cols = info[0].values.map(r => r[1]);
+    // 迁移 users 表
+    const userInfo = db.exec("PRAGMA table_info(users)");
+    if (userInfo.length > 0) {
+      const cols = userInfo[0].values.map(r => r[1]);
       if (!cols.includes('role')) {
         db.run("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user' NOT NULL");
         console.log('数据库迁移: 已添加 role 列');
       }
       if (!cols.includes('frozen')) {
         db.run("ALTER TABLE users ADD COLUMN frozen DECIMAL(10,2) DEFAULT 0.00");
-        // 给现有用户充点钱方便测试
         db.run("UPDATE users SET balance = 10000 WHERE balance = 0");
         console.log('数据库迁移: 已添加 frozen 列 + 每人充值 10000 元');
+      }
+    }
+
+    // 迁移 orders 表
+    const orderInfo = db.exec("PRAGMA table_info(orders)");
+    if (orderInfo.length > 0) {
+      const oCols = orderInfo[0].values.map(r => r[1]);
+      if (!oCols.includes('account_info')) {
+        db.run("ALTER TABLE orders ADD COLUMN account_info TEXT");
+        console.log('数据库迁移: 已添加 account_info 列');
       }
     }
   } catch (e) {

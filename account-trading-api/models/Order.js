@@ -33,9 +33,9 @@ class Order {
       LEFT JOIN account_items ai ON o.item_id = ai.item_id
       LEFT JOIN users u ON o.buyer_id = u.uid
       LEFT JOIN users u2 ON ai.seller_id = u2.uid
-      WHERE (o.buyer_id = ? OR ai.seller_id = ?)
+      WHERE o.buyer_id = ?
     `;
-    const params = [userId, userId];
+    const params = [userId];
 
     if (status !== undefined) {
       sql += ' AND o.pay_status = ?';
@@ -99,9 +99,13 @@ class Order {
   }
 
   // 更新交付状态
-  static updateDeliveryStatus(orderId, deliveryStatus) {
+  static updateDeliveryStatus(orderId, deliveryStatus, accountInfo) {
     const db = getDatabase();
-    db.run('UPDATE orders SET delivery_status = ? WHERE order_id = ?', [deliveryStatus, orderId]);
+    if (accountInfo) {
+      db.run('UPDATE orders SET delivery_status = ?, account_info = ? WHERE order_id = ?', [deliveryStatus, accountInfo, orderId]);
+    } else {
+      db.run('UPDATE orders SET delivery_status = ? WHERE order_id = ?', [deliveryStatus, orderId]);
+    }
     saveDatabase();
     return this.findById(orderId);
   }

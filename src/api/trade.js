@@ -98,3 +98,8 @@ export function recharge(amount) {
 export function getWalletTransactions(params) {
   return http.get('/wallet/transactions', { params })
 }
+
+// ==================== AI ====================
+export function aiValuate(data) {
+  return http.post('/ai/valuate', data)
+}

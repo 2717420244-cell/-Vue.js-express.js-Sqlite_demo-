@@ -16,7 +16,18 @@
         </div>
         <div class="form-item">
           <label>价格（元）<span class="required">*</span></label>
-          <input v-model.number="form.price" type="number" placeholder="请输入价格" class="form-input" min="1" />
+          <div class="price-row">
+            <input v-model.number="form.price" type="number" placeholder="请输入价格" class="form-input" min="1" />
+            <button type="button" class="btn btn--ai" @click="handleAI" :disabled="aiLoading">
+              {{ aiLoading ? '⠋ AI分析中...' : '🤖 AI估价' }}
+            </button>
+          </div>
+          <!-- AI 估价结果 -->
+          <div v-if="aiResult" class="ai-result">
+            <div class="ai-price" v-if="aiResult.price">💰 建议价格：<strong>¥{{ aiResult.price }}</strong></div>
+            <pre class="ai-text">{{ aiResult.analysis }}</pre>
+            <button type="button" class="btn btn--sm" @click="applyPrice" v-if="aiResult.price">应用此价格</button>
+          </div>
         </div>
         <div class="form-item">
           <label>商品描述</label>
@@ -43,7 +54,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createItem, updateItem, getItemById } from '@/api/trade'
+import { createItem, updateItem, getItemById, aiValuate } from '@/api/trade'
 
 const route = useRoute()
 const router = useRouter()
@@ -51,6 +62,37 @@ const isEdit = ref(false)
 const editId = ref(null)
 const submitting = ref(false)
 const errMsg = ref('')
+
+// AI 估价
+const aiLoading = ref(false)
+const aiResult = ref(null)
+
+async function handleAI() {
+  if (!form.category && !form.title && !form.description) {
+    return alert('请先填写游戏分类、标题或描述')
+  }
+  aiLoading.value = true
+  aiResult.value = null
+  try {
+    const res = await aiValuate({
+      category: form.category,
+      title: form.title,
+      description: form.description
+    })
+    aiResult.value = res.data
+  } catch (e) {
+    alert(e.message || 'AI 不可用，请手动输入价格')
+  } finally {
+    aiLoading.value = false
+  }
+}
+
+function applyPrice() {
+  if (aiResult.value?.price) {
+    form.price = aiResult.value.price
+    aiResult.value = null
+  }
+}
 
 const form = reactive({
   title: '', category: '', price: '', description: '', images: ''
@@ -116,4 +158,14 @@ onMounted(() => loadEditItem())
 .form-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 8px; }
 .btn--cancel { background: #f0f2f5; color: var(--text-regular); border-color: var(--border-color); }
 .btn--cancel:hover { background: #e5e7eb; }
+
+.price-row { display: flex; gap: 10px; }
+.price-row .form-input { flex: 1; }
+.btn--ai { background: linear-gradient(135deg, #6366f1, #8b5cf6); white-space: nowrap; font-size: 13px; }
+.btn--ai:hover { background: linear-gradient(135deg, #818cf8, #a78bfa); }
+.btn--ai:disabled { opacity: 0.6; cursor: default; }
+.ai-result { margin-top: 12px; padding: 14px; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; }
+.ai-price { font-size: 15px; margin-bottom: 8px; }
+.ai-price strong { color: #7c3aed; font-size: 18px; }
+.ai-text { margin: 0; padding: 0; font-size: 13px; color: var(--text-regular); white-space: pre-wrap; line-height: 1.7; background: none; font-family: inherit; }
 </style>

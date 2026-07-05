@@ -1,5 +1,6 @@
 node_modules/
 .claude/settings.local.json
+.claude/skills/
 .env
 *.db
 account-trading-api/docs

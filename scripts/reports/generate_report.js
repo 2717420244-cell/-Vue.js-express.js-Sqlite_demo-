@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   Header, Footer, AlignmentType, LevelFormat,
@@ -735,9 +736,13 @@ const doc = new Document({
 });
 
 // 生成文件
+const outDir = path.join(__dirname, '../../reports');
+if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+const outPath = path.join(outDir, 'Express.js后端API设计与实现报告.docx');
+
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync("C:/Users/qq271/Desktop/前端开发/qianduan/Express.js后端API设计与实现报告.docx", buffer);
-  console.log("文档生成成功！");
+  fs.writeFileSync(outPath, buffer);
+  console.log("文档生成成功！输出路径：" + outPath);
 }).catch(err => {
   console.error("生成失败:", err);
 });

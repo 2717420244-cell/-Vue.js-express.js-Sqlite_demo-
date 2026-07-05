@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   Header, Footer, AlignmentType, LevelFormat,
@@ -674,9 +675,13 @@ const doc = new Document({
 });
 
 // 生成文件
+const outDir = path.join(__dirname, '../../reports');
+if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+const outPath = path.join(outDir, '全栈项目部署与总结报告.docx');
+
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync("C:/Users/qq271/Desktop/前端开发/qianduan/全栈项目部署与总结报告.docx", buffer);
-  console.log("全栈项目部署与总结报告.docx 生成成功！");
+  fs.writeFileSync(outPath, buffer);
+  console.log("全栈项目部署与总结报告.docx 生成成功！输出路径：" + outPath);
 }).catch(err => {
   console.error("生成失败:", err);
 });
